@@ -15,15 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NotListedLocation
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.NotListedLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,11 +51,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        AddStationScreen(
-            modifier = modifier.padding(innerPadding)
-        )
-    }
+    DashboardScreen(modifier)
 }
 
 @Composable
@@ -92,7 +87,7 @@ fun ChooseStation(
     userInput: String,
     userInputChanged: (String) -> Unit,
     onSearch: () -> Unit,
-    stations: List<Station>,
+    stations: List<AddStationStation>,
     stationSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -144,13 +139,13 @@ fun Search(
 
 @Composable
 fun Stations(
-    stations: List<Station>,
+    stations: List<AddStationStation>,
     stationSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if(stations.isEmpty()) {
         Icon(
-            imageVector = Icons.Default.NotListedLocation,
+            imageVector = Icons.AutoMirrored.Default.NotListedLocation,
             contentDescription = "No station found",
             modifier = modifier
                 .padding(24.dp)
@@ -193,7 +188,7 @@ fun Stations(
 
 @Composable
 fun ShowDepartures(
-    departures: List<Departure>,
+    departures: List<AddStationDeparture>,
     onChangeStation: () -> Unit,
     modifier: Modifier = Modifier
 ) {

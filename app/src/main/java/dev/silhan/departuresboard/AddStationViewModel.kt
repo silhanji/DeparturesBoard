@@ -13,23 +13,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class Station(
+data class AddStationStation(
     val id: String,
     val name: String,
     val platform: String?,
 )
 
-data class Departure(
+data class AddStationDeparture(
     val routeName: String,
     val leavesAt: Number,
 )
 
 sealed interface UiState {
     data class ChoosingStation(
-        val stations: List<Station> = listOf()
+        val stations: List<AddStationStation> = listOf()
     ): UiState
     data class ShowingDepartures(
-        val departures: List<Departure>
+        val departures: List<AddStationDeparture>
     ): UiState
     object Loading: UiState
     object Error: UiState
@@ -37,14 +37,14 @@ sealed interface UiState {
 
 class AddStationViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState>(UiState.ChoosingStation());
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow();
+    private val _uiState = MutableStateFlow<UiState>(UiState.ChoosingStation())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     var userInput by mutableStateOf("")
         private set
 
     fun updateUserInput(newInput: String) {
-        userInput = newInput;
+        userInput = newInput
     }
 
     fun search() {
@@ -55,7 +55,7 @@ class AddStationViewModel : ViewModel() {
                 _uiState.update {
                     UiState.ChoosingStation(
                         stations = response.features.map { feature ->
-                            Station(
+                            AddStationStation(
                                 id = feature.properties.stopId,
                                 name = feature.properties.stopName,
                                 platform = feature.properties.platformCode
@@ -79,7 +79,7 @@ class AddStationViewModel : ViewModel() {
                 _uiState.update {
                     UiState.ShowingDepartures(
                         departures = response.flatMap { innerList -> innerList.map { departure ->
-                            Departure(
+                            AddStationDeparture(
                                 routeName = departure.route.shortName,
                                 leavesAt = departure.departure.minutes
                             )
