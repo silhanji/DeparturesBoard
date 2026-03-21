@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.silhan.departuresboard.ui.screens.savestation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

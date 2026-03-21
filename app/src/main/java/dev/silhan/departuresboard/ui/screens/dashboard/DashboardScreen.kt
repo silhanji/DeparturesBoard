@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.silhan.departuresboard.ui.screens.dashboard
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box

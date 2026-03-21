@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.silhan.departuresboard.ui.screens.dashboard
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.silhan.departuresboard.ui.screens.chooseplatform
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
