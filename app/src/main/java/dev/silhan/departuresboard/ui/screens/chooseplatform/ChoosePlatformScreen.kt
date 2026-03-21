@@ -34,11 +34,11 @@ import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun ChoosePlatformScreen(
-    onBackNavigation: () -> Unit,
+    onBackArrowClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
-            ChoosePlatformTopBar(onBackNavigation = onBackNavigation)
+            ChoosePlatformTopBar(onBackArrowClick = onBackArrowClick)
         }
     ) { innerPadding ->
         Column(
@@ -55,7 +55,7 @@ fun ChoosePlatformScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChoosePlatformTopBar(
-    onBackNavigation: () -> Unit,
+    onBackArrowClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -63,7 +63,7 @@ fun ChoosePlatformTopBar(
     LargeTopAppBar(
         navigationIcon = {
             IconButton(
-                onClick = { onBackNavigation() }
+                onClick = { onBackArrowClick() }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -150,7 +150,7 @@ fun ChoosePlatformSelection(
 fun ChoosePlatformScreenPreview() {
     DeparturesBoardTheme {
         ChoosePlatformScreen(
-            onBackNavigation = { }
+            onBackArrowClick = { }
         )
     }
 }

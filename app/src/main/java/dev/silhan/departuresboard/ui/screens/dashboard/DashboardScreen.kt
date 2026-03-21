@@ -36,6 +36,7 @@ import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun DashboardScreen(
+    onAddDepartureClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = viewModel(),
 ) {
@@ -44,7 +45,7 @@ fun DashboardScreen(
     Scaffold(
         floatingActionButton = {
             DashboardFab(
-                onclick = { }
+                onclick = { onAddDepartureClick() }
             )
         },
         floatingActionButtonPosition = FabPosition.End,
@@ -192,7 +193,7 @@ fun formatDepartureText(leavesAt: Number): String {
 fun DashboardScreenPreview() {
     DeparturesBoardTheme {
         DashboardScreen(
-
+            onAddDepartureClick = { }
         )
     }
 }

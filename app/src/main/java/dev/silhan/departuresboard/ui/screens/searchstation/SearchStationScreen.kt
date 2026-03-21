@@ -34,11 +34,11 @@ import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun SearchStationScreen(
-    onBackNavigation: () -> Unit,
+    onBackArrowClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
-            ChooseStationTopBar(onBackNavigation = onBackNavigation)
+            ChooseStationTopBar(onBackArrowClick = onBackArrowClick)
         },
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
@@ -63,7 +63,7 @@ fun SearchStationScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseStationTopBar(
-    onBackNavigation: () -> Unit,
+    onBackArrowClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -71,7 +71,7 @@ fun ChooseStationTopBar(
     LargeTopAppBar(
         navigationIcon = {
             IconButton(
-                onClick = { onBackNavigation() }
+                onClick = { onBackArrowClick() }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -164,7 +164,7 @@ fun FoundStations(
 fun SearchStationScreenPreview() {
     DeparturesBoardTheme {
         SearchStationScreen(
-            onBackNavigation = { }
+            onBackArrowClick = { }
         )
     }
 }

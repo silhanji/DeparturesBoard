@@ -36,11 +36,11 @@ import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun SaveStationScreen(
-    onBackNavigation: () -> Unit
+    onBackArrowClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            SaveStationTopBar(onBackNavigation)
+            SaveStationTopBar(onBackArrowClick)
         },
         floatingActionButton = {
             SaveStationButton(
@@ -76,7 +76,7 @@ fun SaveStationScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SaveStationTopBar(
-    onBackNavigation: () -> Unit,
+    onBackArrowClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior =
@@ -85,7 +85,7 @@ fun SaveStationTopBar(
     LargeTopAppBar(
         navigationIcon = {
             IconButton(
-                onClick = { onBackNavigation() }
+                onClick = { onBackArrowClick() }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -205,7 +205,7 @@ fun SaveStationButton(
 fun SaveStationScreenPreview() {
     DeparturesBoardTheme {
         SaveStationScreen(
-            onBackNavigation = { }
+            onBackArrowClick = { }
         )
     }
 }
