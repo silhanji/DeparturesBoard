@@ -1,32 +1,122 @@
-# Project Context
+# Project Context: Prague Public Transport Widget App
 
-Android application for Prague public transport.
+## Overview
+Android application that enhances the official PID Lítačka app by providing a customizable home screen widget for public transport departures.
 
-Goal:
-Provide a home screen widget showing relevant departures
-based on time and user location.
+The app focuses on showing the most relevant departures based on:
+- current time
+- user location
+- user-defined preferences (profiles)
 
-Chytrá aplikace s widgetem fungující jako doplněk pro Lítačku. Umožňuje nastavit zastávky, ze kterých vás zajímají odjezdy podle času a polohy (např. z práce v 17:00). Spoje lze filtrovat dle bezbariérovosti nebo typu vozu. Widget pak rovnou ukazuje nejrelevantnější odjezdy pro vaši aktuální situaci. Získáte tak rychlý přehled MHD přímo na domovské obrazovce.
+## Core Concept
+Users create "profiles" that define when and from where they typically travel.
+The widget dynamically selects the most relevant profile and displays upcoming departures.
 
-Wofklow create profile:
-- (name + time validity)
-- select stop
-- select lines (line number + headsign/last line stop)
+Example:
+- "Work" profile → weekdays at 17:00 from office stop
+- "Home" profile → mornings from home stop
 
-Data:
-- stops.txt in res/raw
-- contains stop name and stop code
+---
 
-Features:
-- stop selection
-- filtering by vehicle type
-- filtering by wheelchair accessibility
-- widget showing upcoming departures
+## Key Features
 
-API:
-Golemio (PID Lítačka transit API)
+### Profiles
+Each profile contains:
+- name (string)
+- time validity (time range or specific time)
+- selected stop (stop ID/code)
+- selected lines:
+    - line number
+    - headsign (destination / last stop)
 
-Tech stack:
+### Filtering
+Departures can be filtered by:
+- vehicle type (tram, bus, metro, etc.)
+- wheelchair accessibility
+
+### Widget
+- Displays upcoming departures for the active profile
+- Automatically selects profile based on:
+    - current time
+    - optionally user location (future improvement)
+- Must be lightweight and update efficiently
+
+---
+
+## Data Sources
+
+### Static Data
+- `res/raw/stops.txt`
+    - contains:
+        - stop name
+        - stop code (ID used in API)
+
+### External API
+- Golemio (PID Lítačka transit API)
+- Used for:
+    - real-time departures
+    - line information
+
+---
+
+## Tech Stack
+
 - Kotlin
 - Android Studio
-- Widgets
+- Android Widgets (AppWidgetProvider / Glance if used)
+- REST API integration (likely Retrofit)
+
+---
+
+## Architecture Expectations
+
+The code should follow:
+- clean architecture principles
+- separation of concerns:
+    - UI (widget)
+    - domain logic (profile selection, filtering)
+    - data layer (API + local data)
+
+Prefer:
+- small, reusable components
+- testable logic (especially profile selection)
+- clear data models
+
+---
+
+## Important Constraints
+
+- Widget must be performant (low battery + minimal updates)
+- Avoid unnecessary API calls
+- Handle missing or delayed API data gracefully
+- Keep logic deterministic (no randomness)
+
+---
+
+## What the Agent Should Optimize For
+
+When generating code or suggestions:
+- prioritize simplicity and readability
+- avoid over-engineering
+- prefer Kotlin idioms
+- ensure Android best practices
+- minimize widget update cost
+
+---
+
+## Typical Tasks for the Agent
+
+- Implement profile selection logic
+- Design data models for stops, lines, departures
+- Create filtering logic
+- Integrate Golemio API
+- Build/update widget UI
+- Optimize background updates
+
+---
+
+## Non-Goals
+
+- Do NOT redesign the whole app unless asked
+- Do NOT introduce heavy frameworks unless necessary
+- Do NOT assume backend control (API is external)
