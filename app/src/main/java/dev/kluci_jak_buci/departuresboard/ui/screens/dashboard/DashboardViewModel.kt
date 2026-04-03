@@ -3,6 +3,7 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.kluci_jak_buci.departuresboard.data.local.LocalProfilesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.network.GolemioApi
 import kotlinx.coroutines.delay
@@ -36,7 +37,8 @@ data class DashboardUiState(
 )
 
 class DashboardViewModel(
-    profilesRepository: ProfilesRepository
+    // Default parameter should be removed when DI gets implemented
+    profilesRepository: ProfilesRepository = LocalProfilesRepository()
 ) : ViewModel() {
 
     private val _departures = MutableStateFlow<Map<String, List<Departure>>>(
