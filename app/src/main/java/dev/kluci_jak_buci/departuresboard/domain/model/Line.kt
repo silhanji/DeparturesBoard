@@ -1,0 +1,33 @@
+package dev.kluci_jak_buci.departuresboard.domain.model
+
+/**
+ * ID of the line, defined as INT in PID data.
+ */
+@JvmInline
+value class LineId(val value: Int)
+
+/**
+ * Name of the line, sometimes referenced as "short name"
+ */
+@JvmInline
+value class LineName(val value: String)
+
+/**
+ * @param id ID of the line
+ * @param name Name of the line
+ * @param type Type of the line
+ * @param directions List of names of all terminal stations for the line. Usually contains single
+ * value, but some lines can have multiple terminal stations in one direction.
+ */
+data class Line(
+    val id: LineId,
+    val name: LineName,
+    val type: LineType,
+    val directions: List<String>,
+)
+
+enum class LineType {
+    TRAM,
+    BUS,
+    METRO,
+}
