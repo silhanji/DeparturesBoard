@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard.ui.screens.chooseplatform
+package dev.kluci_jak_buci.departuresboard.ui.screens.chooseplatform
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable

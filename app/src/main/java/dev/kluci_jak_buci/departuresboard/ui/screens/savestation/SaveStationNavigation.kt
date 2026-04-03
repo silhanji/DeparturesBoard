@@ -1,17 +1,17 @@
-package dev.silhan.departuresboard.ui.screens.searchstation
+package dev.kluci_jak_buci.departuresboard.ui.screens.savestation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
 @Serializable
-object SearchStation
+object SaveStation
 
-fun NavGraphBuilder.searchStation(
+fun NavGraphBuilder.saveStation(
     onBackArrowClick: () -> Unit,
 ) {
-    composable<SearchStation> {
-        SearchStationScreen(
+    composable<SaveStation> {
+        SaveStationScreen(
             onBackArrowClick = onBackArrowClick
         )
     }

@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard.ui.theme
+package dev.kluci_jak_buci.departuresboard.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

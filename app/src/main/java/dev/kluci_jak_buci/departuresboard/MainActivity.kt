@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.kluci_jak_buci.departuresboard
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,13 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import dev.silhan.departuresboard.ui.screens.chooseplatform.choosePlatform
-import dev.silhan.departuresboard.ui.screens.dashboard.Dashboard
-import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
-import dev.silhan.departuresboard.ui.screens.dashboard.dashboard
-import dev.silhan.departuresboard.ui.screens.savestation.saveStation
-import dev.silhan.departuresboard.ui.screens.searchstation.SearchStation
-import dev.silhan.departuresboard.ui.screens.searchstation.searchStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.chooseplatform.choosePlatform
+import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.Dashboard
+import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
+import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.dashboard
+import dev.kluci_jak_buci.departuresboard.ui.screens.savestation.saveStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.searchStation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

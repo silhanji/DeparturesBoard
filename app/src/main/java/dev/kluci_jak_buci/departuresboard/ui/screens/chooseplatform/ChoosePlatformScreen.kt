@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard.ui.screens.chooseplatform
+package dev.kluci_jak_buci.departuresboard.ui.screens.chooseplatform
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
+import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun ChoosePlatformScreen(
