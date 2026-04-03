@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard.ui.screens.dashboard
+package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.silhan.departuresboard.ui.theme.DeparturesBoardTheme
+import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun DashboardScreen(

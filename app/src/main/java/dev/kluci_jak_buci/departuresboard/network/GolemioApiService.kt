@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard.network
+package dev.kluci_jak_buci.departuresboard.network
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient

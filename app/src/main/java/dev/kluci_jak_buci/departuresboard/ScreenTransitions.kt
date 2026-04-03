@@ -1,4 +1,4 @@
-package dev.silhan.departuresboard
+package dev.kluci_jak_buci.departuresboard
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition

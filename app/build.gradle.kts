@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.silhan.departuresboard"
+    namespace = "dev.kluci_jak_buci.departuresboard"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "dev.silhan.departuresboard"
+        applicationId = "dev.kluci_jak_buci.departuresboard"
         minSdk = 28
         targetSdk = 36
         versionCode = 1

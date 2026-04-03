@@ -1,9 +1,9 @@
-package dev.silhan.departuresboard.ui.screens.dashboard
+package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.silhan.departuresboard.network.GolemioApi
+import dev.kluci_jak_buci.departuresboard.network.GolemioApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
