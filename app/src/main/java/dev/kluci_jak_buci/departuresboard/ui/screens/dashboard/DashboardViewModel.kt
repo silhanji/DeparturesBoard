@@ -3,11 +3,14 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.network.GolemioApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -28,35 +31,41 @@ data class Station(
 )
 
 data class DashboardUiState(
-    val stations: List<Station> = listOf(
-        Station(
-            id = "U50Z6P",
-            name = "Poliklinika Budějovická",
-            platform = "L",
-            nickname = "Budějovická (práce)"
-        ),
-        Station(
-            id = "U361Z1P",
-            name = "Malostranské náměstí",
-            platform = "A",
-            nickname = "Matfyz"
-        ),
-        Station(
-            id = "U527Z101P",
-            name = "Vyšehrad",
-            platform = "M1",
-            nickname = "Vyšehrad (do centra)"
-        ),
-    ),
-    val departures: Map<String, List<Departure>> = mapOf(),
+    val stations: List<Station>,
+    val departures: Map<String, List<Departure>>,
 )
 
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(
+    profilesRepository: ProfilesRepository
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        DashboardUiState()
+    private val _departures = MutableStateFlow<Map<String, List<Departure>>>(
+        mapOf()
     )
-    val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
+
+    val uiState: StateFlow<DashboardUiState> = combine(
+        profilesRepository.getAll(),
+        _departures
+    ) { profiles, departures ->
+        DashboardUiState(
+            stations = profiles.map {
+                Station(
+                    id = it.id.value,
+                    name = it.name,
+                    platform = "A",
+                    nickname = it.name
+                )
+            },
+            departures = departures
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = DashboardUiState(
+            stations = emptyList(),
+            departures = emptyMap()
+        )
+    )
 
     init {
         periodicallyRefreshDepartures()
@@ -67,7 +76,7 @@ class DashboardViewModel : ViewModel() {
             while(true) {
                 try {
                     val refreshedDepartures = mutableMapOf<String, List<Departure>>()
-                    for(station in _uiState.value.stations) {
+                    for(station in uiState.value.stations) {
                         val response = GolemioApi.retrofitService.getDepartures(
                             stationId =station.id,
                             limit = 15,
@@ -81,11 +90,7 @@ class DashboardViewModel : ViewModel() {
                                 )
                             }}
                     }
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            departures = refreshedDepartures
-                        )
-                    }
+                    _departures.update { refreshedDepartures }
 
                 } catch(e: Exception) {
                     Log.e(null, "Error when refreshing departures", e)
