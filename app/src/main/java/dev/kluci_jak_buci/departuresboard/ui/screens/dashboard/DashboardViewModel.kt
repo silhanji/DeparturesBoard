@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
-import dev.kluci_jak_buci.departuresboard.network.GolemioApi
+import dev.kluci_jak_buci.departuresboard.data.remote.GolemioApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -81,7 +81,7 @@ class DashboardViewModel @Inject constructor(
                     val refreshedDepartures = mutableMapOf<String, List<Departure>>()
                     for(station in uiState.value.stations) {
                         val response = GolemioApi.retrofitService.getDepartures(
-                            stationId =station.id,
+                            stationIds = listOf(station.id),
                             limit = 15,
                             minutesBefore = 5
                         )
