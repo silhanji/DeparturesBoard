@@ -52,7 +52,7 @@ class DashboardViewModel(
         DashboardUiState(
             stations = profiles.map {
                 Station(
-                    id = it.id.value,
+                    id = it.selectedLines.first().platform.value,
                     name = it.name,
                     platform = "A",
                     nickname = it.name
