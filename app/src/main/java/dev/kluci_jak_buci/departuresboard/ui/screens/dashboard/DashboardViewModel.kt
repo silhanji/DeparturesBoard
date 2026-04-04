@@ -3,7 +3,7 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.kluci_jak_buci.departuresboard.data.local.LocalProfilesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.network.GolemioApi
 import kotlinx.coroutines.delay
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class Departure(
     // Name of the route
@@ -36,9 +37,9 @@ data class DashboardUiState(
     val departures: Map<String, List<Departure>>,
 )
 
-class DashboardViewModel(
-    // Default parameter should be removed when DI gets implemented
-    profilesRepository: ProfilesRepository = LocalProfilesRepository()
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    profilesRepository: ProfilesRepository
 ) : ViewModel() {
 
     private val _departures = MutableStateFlow<Map<String, List<Departure>>>(
