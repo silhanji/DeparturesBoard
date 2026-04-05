@@ -58,6 +58,12 @@ fun App(modifier: Modifier = Modifier) {
         dashboard(
             onAddDepartureClick = {
                 navController.navigate(SearchStation)
+            },
+            onSettingsClick = {
+                // Go to settings screens when implemented
+            },
+            onProfileClick = {
+                // Go to profile screens when implemented
             }
         )
         saveStation(

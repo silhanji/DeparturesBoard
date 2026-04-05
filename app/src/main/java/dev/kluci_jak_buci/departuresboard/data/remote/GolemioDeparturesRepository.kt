@@ -37,6 +37,7 @@ class GolemioDeparturesRepository @Inject constructor(
                         scheduled = apiDeparture.departure.timestampScheduled,
                         predicted = apiDeparture.departure.timestampPredicted,
                         delay = delay.seconds,
+                        headsign = apiDeparture.trip.headsign,
                     )
                 }
             }
