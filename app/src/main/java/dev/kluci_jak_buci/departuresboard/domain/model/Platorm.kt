@@ -5,7 +5,13 @@ package dev.kluci_jak_buci.departuresboard.domain.model
  * PID data.
  */
 @JvmInline
-value class PlatformId(val value: String)
+value class PlatformId(val value: String) {
+    init {
+        require(value.isNotBlank()) {
+            "Platform ID can not be blank"
+        }
+    }
+}
 
 /**
  * @param id ID of the platform

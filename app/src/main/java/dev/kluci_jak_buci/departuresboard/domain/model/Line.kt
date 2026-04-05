@@ -10,7 +10,13 @@ value class LineId(val value: Int)
  * Name of the line, sometimes referenced as "short name"
  */
 @JvmInline
-value class LineName(val value: String)
+value class LineName(val value: String) {
+    init {
+        require(value.isNotBlank()) {
+            "Line name can not be blank"
+        }
+    }
+}
 
 /**
  * @param id ID of the line

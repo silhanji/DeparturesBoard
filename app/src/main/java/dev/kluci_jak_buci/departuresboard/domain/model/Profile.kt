@@ -11,6 +11,12 @@ import kotlin.uuid.Uuid
 @JvmInline
 value class ProfileId(val value: String) {
 
+    init {
+        require(value.isNotBlank()) {
+            "Profile ID can not be blank"
+        }
+    }
+
     companion object {
         fun generate() = ProfileId(
             Uuid.random().toString()
