@@ -1,7 +1,7 @@
 package dev.kluci_jak_buci.departuresboard.domain.model
 
-import kotlinx.datetime.LocalDateTime
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 /**
  * @param line Line which will depart
@@ -11,7 +11,7 @@ import kotlin.time.Duration
  */
 data class Departure(
     val line: LineName,
-    val scheduled: LocalDateTime,
-    val predicted: LocalDateTime,
+    val scheduled: Instant,
+    val predicted: Instant,
     val delay: Duration,
 )

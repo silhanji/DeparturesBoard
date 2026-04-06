@@ -3,71 +3,83 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.kluci_jak_buci.departuresboard.data.local.LocalProfilesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
-import dev.kluci_jak_buci.departuresboard.network.GolemioApi
+import dev.kluci_jak_buci.departuresboard.domain.repository.DeparturesRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.time.Clock
 
-data class Departure(
-    // Name of the route
-    val route: String,
-    // Minutes at which route leaves the platform
-    val leavesAt: Number,
+data class DashboardProfile(
+    val name: String,
+    val departures: List<DashboardDeparture>,
 )
 
-data class Station(
-    // Id of station in Golemio API
-    val id: String,
-    // Official name of station
-    val name: String,
-    val platform: String,
-    val nickname: String,
+data class DashboardDeparture(
+    val line: String,
+    val minutesUntil: Int,
 )
 
 data class DashboardUiState(
-    val stations: List<Station>,
-    val departures: Map<String, List<Departure>>,
+    val profiles: List<DashboardProfile> = emptyList(),
+    val isLoading: Boolean = false,
 )
 
-class DashboardViewModel(
-    // Default parameter should be removed when DI gets implemented
-    profilesRepository: ProfilesRepository = LocalProfilesRepository()
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    profilesRepository: ProfilesRepository,
+    departuresRepository: DeparturesRepository,
 ) : ViewModel() {
 
-    private val _departures = MutableStateFlow<Map<String, List<Departure>>>(
-        mapOf()
-    )
+    private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply {
+        tryEmit(Unit)
+    }
 
-    val uiState: StateFlow<DashboardUiState> = combine(
-        profilesRepository.getAll(),
-        _departures
-    ) { profiles, departures ->
-        DashboardUiState(
-            stations = profiles.map {
-                Station(
-                    id = it.selectedLines.first().platform.value,
-                    name = it.name,
-                    platform = "A",
-                    nickname = it.name
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<DashboardUiState> = profilesRepository.getAll()
+        .flatMapLatest { profiles ->
+            _refreshTrigger.map { profiles }
+        }
+        .map { profiles ->
+            val now = Clock.System.now();
+
+            val dashboardProfiles = profiles.map { profile ->
+                val departures = try {
+                    departuresRepository.get(profile)
+                        .map { departure ->
+                            DashboardDeparture(
+                                line = departure.line.value,
+                                minutesUntil = (departure.predicted - now).inWholeMinutes.toInt()
+                            )
+                        }
+                } catch(e: Exception) {
+                    Log.e("DashboardVM", "Failed to fetch departures for ${profile.name}", e)
+                    emptyList()
+                }
+
+                DashboardProfile(
+                    name = profile.name,
+                    departures = departures
                 )
-            },
-            departures = departures
+            }
+
+            DashboardUiState(
+                profiles = dashboardProfiles,
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = DashboardUiState(isLoading = true)
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = DashboardUiState(
-            stations = emptyList(),
-            departures = emptyMap()
-        )
-    )
 
     init {
         periodicallyRefreshDepartures()
@@ -76,30 +88,9 @@ class DashboardViewModel(
     private fun periodicallyRefreshDepartures() {
         viewModelScope.launch {
             while(true) {
-                try {
-                    val refreshedDepartures = mutableMapOf<String, List<Departure>>()
-                    for(station in uiState.value.stations) {
-                        val response = GolemioApi.retrofitService.getDepartures(
-                            stationId =station.id,
-                            limit = 15,
-                            minutesBefore = 5
-                        )
-                        refreshedDepartures[station.id] =
-                            response.flatMap { innerList -> innerList.map { departure ->
-                                Departure(
-                                    route = departure.route.shortName,
-                                    leavesAt = departure.departure.minutes,
-                                )
-                            }}
-                    }
-                    _departures.update { refreshedDepartures }
-
-                } catch(e: Exception) {
-                    Log.e(null, "Error when refreshing departures", e)
-                }
-
                 // Refresh every 15s
                 delay(15_000L)
+                _refreshTrigger.emit(Unit)
             }
         }
     }

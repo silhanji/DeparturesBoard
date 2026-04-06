@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
-class LocalProfilesRepository : ProfilesRepository {
+class LocalProfilesRepository @Inject constructor() : ProfilesRepository {
 
     private val _profiles = MutableStateFlow<List<Profile>>(emptyList())
 
