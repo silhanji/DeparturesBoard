@@ -20,6 +20,7 @@ import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.dashboard
 import dev.kluci_jak_buci.departuresboard.ui.screens.savestation.saveStation
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.searchStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.selectLines
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -66,6 +67,10 @@ fun App(modifier: Modifier = Modifier) {
         searchStation(
             onBackArrowClick = { navController.popBackStack() }
         )
+        selectLines(
+            onBackArrowClick = { navController.popBackStack() }
+        )
+
     }
 }
 

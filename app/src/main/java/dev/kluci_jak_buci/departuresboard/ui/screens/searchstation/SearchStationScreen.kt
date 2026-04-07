@@ -1,11 +1,16 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.searchstation
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,80 +19,62 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.kluci_jak_buci.departuresboard.R
+import dev.kluci_jak_buci.departuresboard.domain.model.Station
+import dev.kluci_jak_buci.departuresboard.domain.model.StationName
+import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
+import kotlin.collections.listOf
 
 @Composable
 fun SearchStationScreen(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    foundStations: List<StationName>,
+    onStationSelected: (StationName) -> Unit,
     onBackArrowClick: () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            ChooseStationTopBar(onBackArrowClick = onBackArrowClick)
-        },
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            SearchInput(
-                search = "", // TODO
-                onSearchChange = { /* TODO */ }
-            )
-            FoundStations(
-                stations = listOf(
-                    "Háje", "Opatov", "Chodov", "Roztyly", "Kačerov", "Budějovická", "Pankrác",
-                    "Pražského povstání", "Vyšehrad", "I.P. Pavlova", "Hlavní nádraží", "Florenc"
-                ),
-                onStationSelected = { /* TODO: */ },
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ChooseStationTopBar(
-    onBackArrowClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    LargeTopAppBar(
-        navigationIcon = {
-            IconButton(
-                onClick = { onBackArrowClick() }
+    ScreenScaffold(
+        title = stringResource(R.string.choose_station),
+        content = { modifier ->
+            Column(
+                modifier = modifier
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                SearchInput(
+                    search = searchText,
+                    onSearchChange = onSearchTextChange
+                )
+                FoundStations(
+                    stations = foundStations,
+                    onStationSelected = onStationSelected,
                 )
             }
         },
-        title = {
-            Text(
-                "New station",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
-        scrollBehavior = scrollBehavior,
-        modifier = modifier,
+        onBackArrowClick = onBackArrowClick
     )
 }
 
@@ -103,14 +90,14 @@ fun SearchInput(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.search_icon),
             )
         },
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search,
         ),
         singleLine = true,
-        placeholder = { Text("Station name") },
+        placeholder = { Text(stringResource(R.string.station_name)) },
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
@@ -119,43 +106,97 @@ fun SearchInput(
 
 @Composable
 fun FoundStations(
-    stations: List<String>,
-    onStationSelected: (String) -> Unit,
+    stations: List<StationName>,
+    onStationSelected: (StationName) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        "Available stations",
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-    )
-    LazyColumn(modifier = modifier) {
-        items(stations) { station ->
-            Surface(
-                tonalElevation = 8.dp,
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, 2.dp)
-                    .clickable(
-                        onClick = { onStationSelected(station) }
-                    )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                ) {
-                    Text(
-                        station,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = null,
-                    )
-                }
+    Column(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.available_stations),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(
+                items = stations,
+                key = { station -> station.value }
+            ) { station ->
+                FoundStationItem(
+                    station = station,
+                    onClick = { onStationSelected(station) }
+                )
             }
         }
     }
 }
 
+@Composable
+private fun FoundStationItem(
+    station: StationName,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+//            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = station.value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.tap_to_select),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+    }
+}
 @Preview(
     showBackground = true,
     showSystemUi = true,
@@ -164,7 +205,14 @@ fun FoundStations(
 fun SearchStationScreenPreview() {
     DeparturesBoardTheme {
         SearchStationScreen(
-            onBackArrowClick = { }
+            searchText = "Cho",
+            onSearchTextChange = { },
+            foundStations = listOf(
+                StationName("Háje"), StationName("Opatov"), StationName("Chodov"), StationName("Roztyly"), StationName("Kačerov"), StationName("Budějovická"), StationName("Pankrác"),
+                StationName("Pražského povstání"), StationName("Vyšehrad"), StationName("I.P. Pavlova"), StationName("Hlavní nádraží"), StationName("Florenc")
+            ),
+            onStationSelected = { },
+            onBackArrowClick = { },
         )
     }
 }

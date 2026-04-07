@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
