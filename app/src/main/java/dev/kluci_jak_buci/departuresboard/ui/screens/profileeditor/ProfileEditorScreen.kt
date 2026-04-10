@@ -2,70 +2,65 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
 import android.widget.NumberPicker
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.viewinterop.AndroidView
-
-import android.app.TimePickerDialog
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Route
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.LineName
@@ -74,13 +69,9 @@ import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.FoundStationItem
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationScreen
 import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.LineItem
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.format
-import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
 @Composable
 fun ProfileEditorScreen(
@@ -89,101 +80,257 @@ fun ProfileEditorScreen(
     onTimeFilterChange: (TimeFilter) -> Unit,
     onAllDayChange: () -> Unit,
     onBackArrowClick: () -> Unit,
+    onSaveClick: () -> Unit = {},
+    onSelectStationClick: () -> Unit = {},
+    onSelectLinesClick: () -> Unit = {},
 ) {
-
     ScreenScaffold(
-        title = "Create Profile",
+        title = stringResource(R.string.create_profile),
+        onBackArrowClick = onBackArrowClick,
         content = { modifier ->
-            Column(modifier = modifier) {
-                OutlinedTextField(
-                    value = state.name.value,
-                    onValueChange = onNameChange,
-                    label = { Text(text = stringResource(R.string.name)) },
-                    isError = state.name.isError,
-                    supportingText = {
-                        state.name.errorMessage?.let {
-                            Text(text = it)
+            Box(modifier = modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    item {
+                        ProfileHeader()
+                    }
+
+                    item {
+                        SectionWrapper(
+                            title = stringResource(R.string.profile_details),
+                            icon = Icons.Default.Edit
+                        ) {
+                            OutlinedTextField(
+                                value = state.name.value,
+                                onValueChange = onNameChange,
+                                label = { Text(text = stringResource(R.string.name)) },
+                                isError = state.name.isError,
+                                modifier = Modifier.fillMaxWidth(),
+                                supportingText = {
+                                    state.name.errorMessage?.let { Text(text = it) }
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            )
                         }
                     }
-                )
 
-                Row() {
-                    Text(
-                        text = "Time Filter"
-                    )
+                    item {
+                        SectionWrapper(
+                            title = stringResource(R.string.time_filter),
+                            icon = Icons.Default.AccessTime
+                        ) {
+                            TimeFilterSection(
+                                allDay = state.allDay,
+                                timeFilter = state.timeFilter.value,
+                                onAllDayChange = onAllDayChange,
+                                onTimeFilterChange = onTimeFilterChange
+                            )
+                        }
+                    }
 
-                    Text(
-                        text = "all day"
-                    )
-                    Switch(
-                        checked = state.allDay,
-                        onCheckedChange =  { onAllDayChange() }
-                    )
+                    item {
+                        SectionWrapper(
+                            title = stringResource(R.string.station),
+                            icon = Icons.Default.Business
+                        ) {
+                            // Placeholder for selected station, integrated into the form
+                            FoundStationItem(
+                                station = StationName("Anděl"), // TODO: Use state.selectedStation
+                                onClick = onSelectStationClick
+                            )
+                        }
+                    }
+
+                    item {
+                        SectionWrapper(
+                            title = stringResource(R.string.lines),
+                            icon = Icons.Default.Route
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                // List of selected lines
+                                if (state.selectedLines.value.isEmpty()) {
+                                    OutlinedButtonWithIcon(
+                                        text = "Add Lines",
+                                        icon = Icons.Default.Add,
+                                        onClick = onSelectLinesClick
+                                    )
+                                } else {
+                                    state.selectedLines.value.forEach { selectedLine ->
+                                        LineItem(
+                                            line = Line(
+                                                name = selectedLine.line,
+                                                type = LineType.TRAM, // This should come from a lookup or be part of state
+                                                directions = listOf("Direction Placeholder")
+                                            ),
+                                            isSelected = true,
+                                            onClick = onSelectLinesClick,
+                                            showCheckBox = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
-                if (!state.allDay) {
-                    TimeInputField(
-                        label = "From",
-                        value = state.timeFilter.value?.from ?: LocalTime(0, 0),
-                        onValueChange = {
-                            onTimeFilterChange(TimeFilter(
-                                it,
-                                state.timeFilter.value?.to ?: LocalTime(23, 45)
-                            ))
-                        }
-                    )
+                // Sticky Save Button
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
+                    tonalElevation = 8.dp,
+                    shadowElevation = 8.dp
+                ) {
+                    Button(
+                        onClick = onSaveClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = state.isFormValid && !state.isSaving
+                    ) {
+                        Text(
+                            text = stringResource(R.string.save_profile),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
 
-                    TimeInputField(
-                        label = "To",
-                        value = state.timeFilter.value?.to ?: LocalTime(0, 0),
-                        onValueChange = {
-                            onTimeFilterChange(TimeFilter(
-                                state.timeFilter.value?.from ?: LocalTime(23, 45),
-                                it
-                            ))
-                        }
+@Composable
+private fun ProfileHeader() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = "Customize your view",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "Configure which departures you want to see and when they should be active.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun SectionWrapper(
+    title: String,
+    icon: ImageVector,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        content()
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(modifier = Modifier.padding(top = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+@Composable
+private fun TimeFilterSection(
+    allDay: Boolean,
+    timeFilter: TimeFilter,
+    onAllDayChange: () -> Unit,
+    onTimeFilterChange: (TimeFilter) -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAllDayChange() }
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.all_day),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Show departures at any time",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                FoundStationItem(
-                    station = StationName("Andel"),
-                    onClick = {}
+                Switch(
+                    checked = allDay,
+                    onCheckedChange = { onAllDayChange() }
                 )
-
-                LineItem(
-                    line = Line(
-                        name = LineName("12"),
-                        type = LineType.TRAM,
-                        directions = listOf("Lehovec")
-                    ),
-                    isSelected = false,
-                    onClick = {},
-                    showCheckBox = false
-                )
-
-//                TimeFilterPickers(
-//                    timeFilter = state.timeFilter.value,
-//                    onTimeFilterChange = onTimeFilterChange
-//                )
-//
-//                TimeFilterRangeSlider(
-//                    timeFilter = state.timeFilter.value,
-//                    onTimeFilterChange = onTimeFilterChange
-//                )
-//
-//                TimeFilterWheelPickers(
-//                    timeFilter = state.timeFilter.value,
-//                    onTimeFilterChange = onTimeFilterChange
-//                )
-
             }
 
+            AnimatedVisibility(
+                visible = !allDay,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TimeInputField(
+                        label = stringResource(R.string.from),
+                        value = timeFilter.from,
+                        onValueChange = {
+                            onTimeFilterChange(timeFilter.copy(from = it))
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
 
-        },
-        onBackArrowClick = onBackArrowClick
-    )
-
-
+                    TimeInputField(
+                        label = stringResource(R.string.to),
+                        value = timeFilter.to,
+                        onValueChange = {
+                            onTimeFilterChange(timeFilter.copy(to = it))
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -195,32 +342,32 @@ fun TimeInputField(
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
+    Box(modifier = modifier) {
         OutlinedTextField(
             value = value.formatHourMinute(),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Time") },
-            placeholder = { Text("Select time") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            leadingIcon = {
+                Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(18.dp))
+            }
         )
+        // Invisible overlay to intercept clicks
         Box(
             Modifier
                 .matchParentSize()
+                .clip(RoundedCornerShape(12.dp))
                 .clickable { showTimePicker = true }
         )
     }
 
     if (showTimePicker) {
-        DialWithDialogExample(
-            onConfirm = { timePickerState ->
-                onValueChange(LocalTime(
-                    timePickerState.hour,
-                    timePickerState.minute
-                ))
+        TimePickerWithDialog(
+            initialTime = value,
+            onConfirm = { hour, minute ->
+                onValueChange(LocalTime(hour, minute))
                 showTimePicker = false
             },
             onDismiss = {
@@ -231,408 +378,79 @@ fun TimeInputField(
 }
 
 @Composable
-fun DialWithDialogExample(
-    onConfirm: (TimePickerState) -> Unit,
+fun TimePickerWithDialog(
+    initialTime: LocalTime,
+    onConfirm: (Int, Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val currentTime = LocalTime(8, 0)
-
     val timePickerState = rememberTimePickerState(
-        initialHour = 9,
-        initialMinute = 10,
+        initialHour = initialTime.hour,
+        initialMinute = initialTime.minute,
         is24Hour = true,
     )
 
-    TimePickerDialog(
-        onDismiss = { onDismiss() },
-        onConfirm = { onConfirm(timePickerState) }
-    ) {
-        TimePicker(
-            state = timePickerState,
-        )
-    }
-}
-
-@Composable
-fun TimePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    content: @Composable () -> Unit
-) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text("Dismiss")
-            }
-        },
         confirmButton = {
-            TextButton(onClick = { onConfirm() }) {
-                Text("OK")
-            }
-        },
-        text = { content() }
-    )
-}
-
-
-
-data class TimeFilter(
-    val from: LocalTime,
-    val to: LocalTime,
-)
-
-@Composable
-fun TimeFilterWheelPickers(
-    timeFilter: TimeFilter?,
-    onTimeFilterChange: (TimeFilter?) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var showFromDialog by remember { mutableStateOf(false) }
-    var showToDialog by remember { mutableStateOf(false) }
-
-    val currentFrom = timeFilter?.from ?: LocalTime(0, 0)
-    val currentTo = timeFilter?.to ?: LocalTime(23, 45)
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        TimePickerField(
-            value = currentFrom.formatHourMinute(),
-            label = "From",
-            modifier = Modifier.weight(1f),
-            onClick = { showFromDialog = true }
-        )
-
-        TimePickerField(
-            value = currentTo.formatHourMinute(),
-            label = "To",
-            modifier = Modifier.weight(1f),
-            onClick = { showToDialog = true }
-        )
-    }
-
-    if (showFromDialog) {
-        WheelTimePickerDialog(
-            initialTime = currentFrom,
-            title = "Select start time",
-            onDismiss = { showFromDialog = false },
-            onConfirm = { newFrom ->
-                showFromDialog = false
-                onTimeFilterChange(
-                    TimeFilter(
-                        from = newFrom,
-                        to = if (newFrom > currentTo) newFrom else currentTo
-                    )
-                )
-            }
-        )
-    }
-
-    if (showToDialog) {
-        WheelTimePickerDialog(
-            initialTime = currentTo,
-            title = "Select end time",
-            onDismiss = { showToDialog = false },
-            onConfirm = { newTo ->
-                showToDialog = false
-                onTimeFilterChange(
-                    TimeFilter(
-                        from = if (newTo < currentFrom) newTo else currentFrom,
-                        to = newTo
-                    )
-                )
-            }
-        )
-    }
-}
-
-@Composable
-private fun TimePickerField(
-    value: String,
-    label: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = {},
-        modifier = modifier.clickable { onClick() },
-        readOnly = true,
-        enabled = false,
-        label = { Text(label) }
-    )
-}
-
-@Composable
-fun WheelTimePickerDialog(
-    initialTime: LocalTime,
-    title: String,
-    onDismiss: () -> Unit,
-    onConfirm: (LocalTime) -> Unit,
-) {
-    val minuteValues = listOf(0, 15, 30, 45)
-
-    var selectedHour by remember { mutableIntStateOf(initialTime.hour) }
-    var selectedMinuteIndex by remember {
-        mutableIntStateOf(
-            minuteValues.indexOf(initialTime.minute).takeIf { it >= 0 } ?: 0
-        )
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                NumberPickerView(
-                    value = selectedHour,
-                    range = 0..23,
-                    format = { it.toString().padStart(2, '0') },
-                    onValueChange = { selectedHour = it },
-                    modifier = Modifier.weight(1f)
-                )
-
-                NumberPickerView(
-                    value = selectedMinuteIndex,
-                    range = minuteValues.indices,
-                    format = { minuteValues[it].toString().padStart(2, '0') },
-                    onValueChange = { selectedMinuteIndex = it },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirm(LocalTime(selectedHour, minuteValues[selectedMinuteIndex]))
-                }
-            ) {
-                Text("OK")
+            TextButton(onClick = { onConfirm(timePickerState.hour, timePickerState.minute) }) {
+                Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
+            }
+        },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                TimePicker(state = timePickerState)
             }
         }
     )
 }
 
 @Composable
-private fun NumberPickerView(
-    value: Int,
-    range: IntRange,
-    format: (Int) -> String,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+private fun OutlinedButtonWithIcon(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit
 ) {
-    AndroidView(
-        modifier = modifier,
-        factory = { context ->
-            NumberPicker(context).apply {
-                minValue = range.first
-                maxValue = range.last
-                wrapSelectorWheel = true
-                descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
-
-                displayedValues = Array(range.count()) { index ->
-                    format(range.first + index)
-                }
-
-                setOnValueChangedListener { _, _, newVal ->
-                    onValueChange(newVal)
-                }
-            }
-        },
-        update = { picker ->
-            if (picker.minValue != range.first || picker.maxValue != range.last) {
-                picker.displayedValues = null
-                picker.minValue = range.first
-                picker.maxValue = range.last
-                picker.displayedValues = Array(range.count()) { index ->
-                    format(range.first + index)
-                }
-            }
-
-            if (picker.value != value) {
-                picker.value = value
-            }
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        border = CardDefaults.outlinedCardBorder(),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = text, style = MaterialTheme.typography.labelLarge)
         }
-    )
+    }
 }
 
 private fun LocalTime.formatHourMinute(): String {
     return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
 }
 
-@Composable
-fun TimeFilterPickers(
-    timeFilter: TimeFilter?,
-    onTimeFilterChange: (TimeFilter?) -> Unit,
-    modifier: Modifier = Modifier,
-    labelFrom: String = "From",
-    labelTo: String = "To",
-) {
-    val context = LocalContext.current
-
-    val currentFrom = timeFilter?.from ?: LocalTime(0, 0)
-    val currentTo = timeFilter?.to ?: LocalTime(23, 45)
-
-    val fromPicker = remember(currentFrom, currentTo) {
-        TimePickerDialog(
-            context,
-            { _, hour, minute ->
-                val newFrom = LocalTime(hour, minute)
-                val adjustedTo = if (newFrom > currentTo) newFrom else currentTo
-                onTimeFilterChange(
-                    TimeFilter(
-                        from = newFrom,
-                        to = adjustedTo
-                    )
-                )
-            },
-            currentFrom.hour,
-            currentFrom.minute,
-            true
-        )
-    }
-
-    val toPicker = remember(currentFrom, currentTo) {
-        TimePickerDialog(
-            context,
-            { _, hour, minute ->
-                val newTo = LocalTime(hour, minute)
-                val adjustedFrom = if (newTo < currentFrom) newTo else currentFrom
-                onTimeFilterChange(
-                    TimeFilter(
-                        from = adjustedFrom,
-                        to = newTo
-                    )
-                )
-            },
-            currentTo.hour,
-            currentTo.minute,
-            true
-        )
-    }
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        TimePickerField2(
-            value = currentFrom.formatAsHourMinute(),
-            label = labelFrom,
-            onClick = { fromPicker.show() },
-            modifier = Modifier.weight(1f)
-        )
-
-        TimePickerField2(
-            value = currentTo.formatAsHourMinute(),
-            label = labelTo,
-            onClick = { toPicker.show() },
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun TimePickerField2(
-    value: String,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = {},
-        modifier = modifier.clickable(onClick = onClick),
-        readOnly = true,
-        enabled = false,
-        label = { Text(label) }
-    )
-}
-
-private fun LocalTime.formatAsHourMinute(): String {
-    val hh = hour.toString().padStart(2, '0')
-    val mm = minute.toString().padStart(2, '0')
-    return "$hh:$mm"
-}
-
-@Composable
-fun TimeFilterRangeSlider(
-    timeFilter: TimeFilter?,
-    onTimeFilterChange: (TimeFilter?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val startMinutes = timeFilter?.from?.toMinutes()?.toFloat() ?: (8 * 60f)
-    val endMinutes = timeFilter?.to?.toMinutes()?.toFloat() ?: (16 * 60f)
-
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-
-    Column(modifier = modifier) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Validity",
-                style = MaterialTheme.typography.labelLarge
-            )
-
-//            Text(
-//                text = "${minutesToLocalTime(startMinutes.roundToInt()).format(formatter)} - " +
-//                        "${minutesToLocalTime(endMinutes.roundToInt()).format(formatter)}"
-//            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        RangeSlider(
-            value = startMinutes..endMinutes,
-            onValueChange = { range ->
-                val snappedFrom = snapToQuarterHour(range.start)
-                val snappedTo = snapToQuarterHour(range.endInclusive)
-
-                if (snappedFrom < snappedTo) {
-                    onTimeFilterChange(TimeFilter(minutesToLocalTime(snappedFrom), minutesToLocalTime(snappedTo)))
-                }
-            },
-            valueRange = 0f..1439f
-        )
-
-    }
-}
-
-private fun snapToQuarterHour(value: Float): Int {
-    val minutes = value.roundToInt()
-    val snapped = (minutes / 15.0).roundToInt() * 15
-    return snapped.coerceIn(0, 23 * 60 + 45)
-}
-
-private fun minutesToLocalTime(totalMinutes: Int): LocalTime =
-    LocalTime(totalMinutes / 60, totalMinutes % 60)
-
-private fun LocalTime.toMinutes(): Int =
-    hour * 60 + minute
-
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ProfileEditorScreenPreview() {
     var state by remember { mutableStateOf(ProfileEditorState()) }
 
     DeparturesBoardTheme {
         ProfileEditorScreen(
-            onBackArrowClick = {},
             state = state,
-            onNameChange = { state = state.copy ( name = state.name.copy(value = it)) },
-            onAllDayChange = {state = state.copy (allDay = !state.allDay)},
+            onNameChange = { state = state.copy(name = state.name.copy(value = it)) },
+            onAllDayChange = { state = state.copy(allDay = !state.allDay) },
             onTimeFilterChange = { state = state.copy(timeFilter = state.timeFilter.copy(value = it)) },
+            onBackArrowClick = {}
         )
     }
 }

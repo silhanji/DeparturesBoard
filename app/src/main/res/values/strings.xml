@@ -10,4 +10,16 @@
     <string name="tap_to_select">Tap to select</string>
     <string name="confirm">Confirm</string>
     <string name="name">Name</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="profile_details">Profile Details</string>
+    <string name="time_filter">Time Filter</string>
+    <string name="all_day">All day</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="station">Station</string>
+    <string name="lines">Lines</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="select_time">Select time</string>
 </resources>
