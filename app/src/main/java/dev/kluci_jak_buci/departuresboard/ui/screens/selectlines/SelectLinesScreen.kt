@@ -116,6 +116,7 @@ fun LineItem(
     line: Line,
     isSelected: Boolean,
     onClick: () -> Unit,
+    showCheckBox: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val containerColor = if (isSelected) {
@@ -156,10 +157,12 @@ fun LineItem(
                 .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { onClick() }
-            )
+            if (showCheckBox) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick() }
+                )
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

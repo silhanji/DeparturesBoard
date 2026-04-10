@@ -137,7 +137,7 @@ fun FoundStations(
 }
 
 @Composable
-private fun FoundStationItem(
+fun FoundStationItem(
     station: StationName,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
