@@ -15,6 +15,7 @@ import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.removeResult
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.resultKey
 import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLines
 import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLinesResult
+import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.toParcelable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -62,8 +63,13 @@ fun NavGraphBuilder.profileEditor(
                 navController.navigate(SearchStation)
             },
             onSelectLinesClick = {
-                state.selectedStation?.let {
-                    navController.navigate(SelectLines(it.value))
+                state.selectedStation?.let { station ->
+                    navController.navigate(
+                        SelectLines(
+                            stationName = station.value,
+                            initialSelectedLines = state.selectedLines.value.map { it.toParcelable() }
+                        )
+                    )
                 }
             }
         )

@@ -17,11 +17,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SelectLinesState(val station: Station, initialSelectedLines: List<Line> = emptyList()) {
+class SelectLinesState(val station: Station, initialSelectedLines: List<SelectedLine> = emptyList()) {
 
     val selectedLines = mutableStateListOf<Line>().apply {
-        addAll(initialSelectedLines)
+        val allLines = station.platforms.flatMap { it.lines }.distinct()
+        val initialLines = initialSelectedLines.mapNotNull { selected ->
+            allLines.find { it.name == selected.line }
+        }
+        addAll(initialLines)
     }
+
     val lines: List<Line>
         get() = station.platforms
             .flatMap { it.lines }
@@ -52,7 +57,7 @@ class SelectLinesViewModel @Inject constructor(
     private val stationsRepository: StationsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val selectLinesArgs = savedStateHandle.toRoute<SelectLines>()
+    private val selectLinesArgs = savedStateHandle.toRoute<SelectLines>(SelectLines.typeMap)
     
     private val _state = MutableStateFlow<SelectLinesState?>(null)
     val state = _state.asStateFlow()
@@ -61,7 +66,10 @@ class SelectLinesViewModel @Inject constructor(
         viewModelScope.launch {
             val station = stationsRepository.get(StationName(selectLinesArgs.stationName))
             if (station != null) {
-                _state.value = SelectLinesState(station)
+                _state.value = SelectLinesState(
+                    station = station,
+                    initialSelectedLines = selectLinesArgs.initialSelectedLines.map { it.toDomain() }
+                )
             }
         }
     }
