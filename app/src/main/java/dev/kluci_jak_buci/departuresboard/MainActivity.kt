@@ -48,7 +48,7 @@ fun App(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = ProfileEditor,
+        startDestination = Dashboard,
         modifier = modifier,
         enterTransition = ScreenTransitions.enter,
         exitTransition = ScreenTransitions.exit,
@@ -60,7 +60,7 @@ fun App(modifier: Modifier = Modifier) {
         )
         dashboard(
             onAddDepartureClick = {
-                navController.navigate(SearchStation)
+                navController.navigate(ProfileEditor)
             }
         )
         saveStation(

@@ -52,13 +52,20 @@ fun NavGraphBuilder.profileEditor(
         }
 
         val state by viewModel.uiState.collectAsState()
+
+        LaunchedEffect(state.isSaveSuccessful) {
+            if (state.isSaveSuccessful) {
+                navController.popBackStack()
+            }
+        }
+
         ProfileEditorScreen(
             state = state,
             onNameChange = viewModel::onNameChange,
             onTimeFilterChange = viewModel::onTimeFilterChange,
             onAllDayChange = viewModel::onAllDayChange,
             onBackArrowClick = onBackArrowClick,
-            onSaveClick = {},
+            onSaveClick = viewModel::saveProfile,
             onSelectStationClick = {
                 navController.navigate(SearchStation)
             },
