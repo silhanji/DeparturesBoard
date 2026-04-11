@@ -3,6 +3,7 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.Profile
 import dev.kluci_jak_buci.departuresboard.domain.model.ProfileId
 import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
@@ -10,6 +11,7 @@ import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.domain.model.VehicleFilter
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
+import dev.kluci_jak_buci.departuresboard.domain.repository.StationsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -32,6 +34,7 @@ data class ProfileEditorState(
     val vehicleFilter: VehicleFilter? = null,
     val selectedLines: InputField<List<SelectedLine>> = InputField(emptyList()),
     val selectedStation: StationName? = null,
+    val resolvedLines: List<Line> = emptyList(),
     val isSaving: Boolean = false,
     val isSaveSuccessful: Boolean = false
 ) {
@@ -43,7 +46,8 @@ data class ProfileEditorState(
 
 @HiltViewModel
 class ProfileEditorViewModel @Inject constructor(
-    private val profilesRepository: ProfilesRepository
+    private val profilesRepository: ProfilesRepository,
+    private val stationsRepository: StationsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileEditorState())
@@ -61,8 +65,16 @@ class ProfileEditorViewModel @Inject constructor(
         _uiState.update { it.copy(allDay = !it.allDay) }
     }
 
-    fun onStationChanged(station: StationName) {
-        _uiState.update { it.copy(selectedStation = station) }
+    fun onStationChanged(stationName: StationName) {
+        viewModelScope.launch {
+            val station = stationsRepository.get(stationName)
+            _uiState.update { 
+                it.copy(
+                    selectedStation = stationName,
+                    resolvedLines = station?.platforms?.flatMap { p -> p.lines }?.distinctBy { l -> l.name } ?: emptyList()
+                )
+            }
+        }
     }
 
     fun onLinesChanged(lines: List<SelectedLine>) {

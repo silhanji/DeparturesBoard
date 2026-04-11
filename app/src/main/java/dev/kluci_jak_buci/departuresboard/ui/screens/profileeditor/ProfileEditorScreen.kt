@@ -1,17 +1,17 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
-import android.widget.NumberPicker
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,16 +22,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,11 +45,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,19 +56,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.unit.sp
 import dev.kluci_jak_buci.departuresboard.R
-import dev.kluci_jak_buci.departuresboard.domain.model.Line
-import dev.kluci_jak_buci.departuresboard.domain.model.LineName
-import dev.kluci_jak_buci.departuresboard.domain.model.LineType
-import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.FoundStationItem
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.LineItem
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import kotlinx.datetime.LocalTime
 
@@ -103,7 +99,6 @@ fun ProfileEditorScreen(
                         SectionWrapper(
                             title = stringResource(R.string.profile_details),
                             icon = Icons.Default.Edit,
-                            onActionClick = {}
                         ) {
                             OutlinedTextField(
                                 value = state.name.value,
@@ -123,7 +118,6 @@ fun ProfileEditorScreen(
                         SectionWrapper(
                             title = stringResource(R.string.time_filter),
                             icon = Icons.Default.AccessTime,
-                            onActionClick = {}
                         ) {
                             TimeFilterSection(
                                 allDay = state.allDay,
@@ -135,47 +129,94 @@ fun ProfileEditorScreen(
                     }
 
                     item {
+                        val hasStation = state.selectedStation != null
                         SectionWrapper(
-                            title = stringResource(R.string.station),
+                            title = if (hasStation) stringResource(R.string.departures) else stringResource(R.string.select_station),
                             icon = Icons.Default.Business,
-                            onActionClick = onSelectStationClick
+                            onActionClick = onSelectStationClick,
+                            actionLabel = if (!hasStation) stringResource(R.string.add) else stringResource(R.string.edit)
                         ) {
-                            if (state.selectedStation != null) {
-                                FoundStationItem(
-                                    station = state.selectedStation, // TODO: Use state.selectedStation
-                                    onClick = onSelectStationClick
-                                )
-                            }
-                        }
-                    }
-
-                    item {
-                        SectionWrapper(
-                            title = stringResource(R.string.lines),
-                            icon = Icons.Default.Route,
-                            onActionClick = {}
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                // List of selected lines
-                                if (state.selectedLines.value.isEmpty()) {
-                                    OutlinedButtonWithIcon(
-                                        text = "Add Lines",
-                                        icon = Icons.Default.Add,
-                                        onClick = onSelectLinesClick
+                            Column {
+                                if (hasStation) {
+                                    FoundStationItem(
+                                        station = state.selectedStation!!,
+                                        onClick = {}, // Station item itself is no longer clickable
+                                        modifier = Modifier.padding(horizontal = 0.dp)
                                     )
-                                } else {
-                                    state.selectedLines.value.forEach { selectedLine ->
-                                        LineItem(
-                                            line = Line(
-                                                name = selectedLine.line,
-                                                type = LineType.TRAM, // This should come from a lookup or be part of state
-                                                directions = listOf("Direction Placeholder")
-                                            ),
-                                            isSelected = true,
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+
+                                    // Lines Header
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = Icons.Default.Route,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = stringResource(R.string.lines),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+
+                                        TextButton(
                                             onClick = onSelectLinesClick,
-                                            showCheckBox = false
-                                        )
+                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (state.selectedLines.value.isEmpty()) Icons.Default.Add else Icons.Default.Edit,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(
+                                                text = if (state.selectedLines.value.isEmpty()) stringResource(R.string.add) else stringResource(R.string.edit),
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
+                                        }
                                     }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // Concise Lines Display
+                                    if (state.selectedLines.value.isEmpty()) {
+                                        Text(
+                                            text = stringResource(R.string.no_lines_selected_hint),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    } else {
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            state.selectedLines.value.forEach { selectedLine ->
+                                                val lineInfo = state.resolvedLines.find { it.name == selectedLine.line }
+                                                SelectedLineChip(
+                                                    lineName = selectedLine.line.value,
+                                                    directions = lineInfo?.directions ?: emptyList()
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Station Placeholder Hint
+                                    Text(
+                                        text = "Select a station to configure departures and lines.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
                                 }
                             }
                         }
@@ -211,6 +252,36 @@ fun ProfileEditorScreen(
 }
 
 @Composable
+private fun SelectedLineChip(lineName: String, directions: List<String>) {
+    AssistChip(
+        onClick = { },
+        label = {
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append(lineName)
+                    }
+                    if (directions.isNotEmpty()) {
+                        withStyle(style = SpanStyle(
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                            fontSize = 11.sp
+                        )) {
+                            append(" → ${directions.joinToString(", ")}")
+                        }
+                    }
+                }
+            )
+        },
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
+        ),
+        border = null,
+        shape = RoundedCornerShape(8.dp)
+    )
+}
+
+@Composable
 private fun ProfileHeader() {
     Column(
         modifier = Modifier
@@ -235,7 +306,8 @@ private fun ProfileHeader() {
 private fun SectionWrapper(
     title: String,
     icon: ImageVector,
-    onActionClick: () -> Unit,
+    onActionClick: (() -> Unit)? = null,
+    actionLabel: String? = null,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -260,20 +332,24 @@ private fun SectionWrapper(
                 fontWeight = FontWeight.SemiBold
             )
 
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .clickable(
-                            onClick = onActionClick
-                        )
-                )
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (onActionClick != null) {
+                TextButton(
+                    onClick = onActionClick,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (actionLabel == stringResource(R.string.add)) Icons.Default.Add else Icons.Default.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = actionLabel ?: stringResource(R.string.edit),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
         }
         content()
