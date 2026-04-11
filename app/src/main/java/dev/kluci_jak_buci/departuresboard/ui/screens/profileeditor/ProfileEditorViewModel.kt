@@ -2,6 +2,7 @@ package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
 import androidx.lifecycle.ViewModel
 import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
+import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.domain.model.VehicleFilter
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,8 @@ data class ProfileEditorState(
     val vehicleFilter: VehicleFilter? = null, // Assuming no validation needed here
     val selectedLines: InputField<List<SelectedLine>> = InputField(emptyList()),
 
+    val selectedStation: StationName? = null,
+
     val isSaving: Boolean = false
 ) {
     // Derived state: The save button is only enabled if there are no errors
@@ -45,13 +48,25 @@ class ProfileEditorViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     // Expose direct, explicit functions
-    fun updateName(newName: String) {
+    fun onNameChange(newName: String) {
         // Validation logic here
         _uiState.update { it.copy(name = InputField(newName)) }
     }
 
-    fun updateTimeFilter(filter: TimeFilter) {
+    fun onTimeFilterChange(filter: TimeFilter) {
         _uiState.update { it.copy(timeFilter = InputField(filter)) }
+    }
+
+    fun onAllDayChange() {
+        _uiState.update { it.copy(allDay = !it.allDay) }
+    }
+
+    fun onStationChanged(station: StationName) {
+        _uiState.update { it.copy(selectedStation = station) }
+    }
+
+    fun onLinesChanged(lines: List<SelectedLine>) {
+        _uiState.update { it.copy(selectedLines = InputField(lines)) }
     }
 
     fun saveProfile() {

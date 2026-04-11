@@ -5,15 +5,12 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.gradle.secrets)
     kotlin("plugin.serialization")
+    kotlin("plugin.parcelize")
 }
 
 android {
     namespace = "dev.kluci_jak_buci.departuresboard"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.kluci_jak_buci.departuresboard"

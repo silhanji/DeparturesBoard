@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material3.AlertDialog
@@ -101,7 +102,8 @@ fun ProfileEditorScreen(
                     item {
                         SectionWrapper(
                             title = stringResource(R.string.profile_details),
-                            icon = Icons.Default.Edit
+                            icon = Icons.Default.Edit,
+                            onActionClick = {}
                         ) {
                             OutlinedTextField(
                                 value = state.name.value,
@@ -120,7 +122,8 @@ fun ProfileEditorScreen(
                     item {
                         SectionWrapper(
                             title = stringResource(R.string.time_filter),
-                            icon = Icons.Default.AccessTime
+                            icon = Icons.Default.AccessTime,
+                            onActionClick = {}
                         ) {
                             TimeFilterSection(
                                 allDay = state.allDay,
@@ -134,20 +137,23 @@ fun ProfileEditorScreen(
                     item {
                         SectionWrapper(
                             title = stringResource(R.string.station),
-                            icon = Icons.Default.Business
+                            icon = Icons.Default.Business,
+                            onActionClick = onSelectStationClick
                         ) {
-                            // Placeholder for selected station, integrated into the form
-                            FoundStationItem(
-                                station = StationName("Anděl"), // TODO: Use state.selectedStation
-                                onClick = onSelectStationClick
-                            )
+                            if (state.selectedStation != null) {
+                                FoundStationItem(
+                                    station = state.selectedStation, // TODO: Use state.selectedStation
+                                    onClick = onSelectStationClick
+                                )
+                            }
                         }
                     }
 
                     item {
                         SectionWrapper(
                             title = stringResource(R.string.lines),
-                            icon = Icons.Default.Route
+                            icon = Icons.Default.Route,
+                            onActionClick = {}
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 // List of selected lines
@@ -229,6 +235,7 @@ private fun ProfileHeader() {
 private fun SectionWrapper(
     title: String,
     icon: ImageVector,
+    onActionClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -252,6 +259,22 @@ private fun SectionWrapper(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
+
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable(
+                            onClick = onActionClick
+                        )
+                )
+            }
         }
         content()
         Spacer(modifier = Modifier.height(8.dp))

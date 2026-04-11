@@ -17,6 +17,8 @@ import dev.kluci_jak_buci.departuresboard.ui.screens.chooseplatform.choosePlatfo
 import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.Dashboard
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.dashboard
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditor
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.profileEditor
 import dev.kluci_jak_buci.departuresboard.ui.screens.savestation.saveStation
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.searchStation
@@ -46,7 +48,7 @@ fun App(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = Dashboard,
+        startDestination = ProfileEditor,
         modifier = modifier,
         enterTransition = ScreenTransitions.enter,
         exitTransition = ScreenTransitions.exit,
@@ -65,9 +67,17 @@ fun App(modifier: Modifier = Modifier) {
             onBackArrowClick = { navController.popBackStack() }
         )
         searchStation(
+            navController = navController,
             onBackArrowClick = { navController.popBackStack() }
         )
         selectLines(
+            navController = navController,
+
+            onBackArrowClick = { navController.popBackStack() }
+        )
+
+        profileEditor(
+            navController = navController,
             onBackArrowClick = { navController.popBackStack() }
         )
 
