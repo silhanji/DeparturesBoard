@@ -61,7 +61,9 @@ fun NavGraphBuilder.selectLines(
 
         state?.let { selectLinesState ->
             SelectLinesScreen(
-                selectLinesState = selectLinesState,
+                lines = selectLinesState.lines,
+                selectedLines = selectLinesState.selectedLines,
+                onLineClick = { selectLinesState.selectLine(it) },
                 onBackArrowClick = onBackArrowClick,
                 onConfirmClick = {
                     val result = SelectLinesResult(

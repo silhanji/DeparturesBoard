@@ -16,28 +16,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
@@ -50,14 +42,13 @@ import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
 import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.FoundStations
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchInput
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationScreen
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
 fun SelectLinesScreen(
-    selectLinesState: SelectLinesState,
+    lines: List<Line>,
+    selectedLines: List<Line>,
+    onLineClick: (Line) -> Unit,
     onBackArrowClick: () -> Unit,
     onConfirmClick: () -> Unit,
 ) {
@@ -69,25 +60,27 @@ fun SelectLinesScreen(
             ) {
                 LazyColumn(
                     contentPadding = PaddingValues(vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
                     items(
-                        items = selectLinesState.lines,
+                        items = lines,
+                        key = { "${it.name.value}_${it.type}_${it.directions.joinToString(",")}" }
                     ) { line ->
                         LineItem(
                             line = line,
-                            isSelected = selectLinesState.selectedLines.contains(line),
-                            onClick = { selectLinesState.selectLine(line) }
+                            isSelected = selectedLines.contains(line),
+                            onClick = { onLineClick(line) }
                         )
                     }
                 }
 
                 Row(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(
-                        onClick = { onBackArrowClick },
+                        onClick = onBackArrowClick,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
@@ -96,7 +89,7 @@ fun SelectLinesScreen(
                         )
                     }
                     Button(
-                        onClick = { onConfirmClick() },
+                        onClick = onConfirmClick,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
@@ -135,7 +128,6 @@ fun LineItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-//            .clip(RoundedCornerShape(20.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
@@ -211,61 +203,29 @@ fun LineItem(
 )
 @Composable
 fun SelectLinesScreenPreview() {
-    val station = Station(
-        name = StationName("Malostranská"),
-        platforms = listOf(
-            Platform(
-                id = PlatformId("U360Z1P"),
-                name = "Malostranská - směr centrum",
-                lines = listOf(
-                    Line(
-                        name = LineName("12"),
-                        type = LineType.TRAM,
-                        directions = listOf("Sídliště Barrandov")
-                    ),
-                    Line(
-                        name = LineName("18"),
-                        type = LineType.TRAM,
-                        directions = listOf("Nádraží Podbaba")
-                    ),
-                    Line(
-                        name = LineName("A"),
-                        type = LineType.METRO,
-                        directions = listOf("Depo Hostivař")
-                    )
-                ),
-                position = GeoPosition(50.0910, 14.4112)
-            ),
-            Platform(
-                id = PlatformId("U360Z2P"),
-                name = "Malostranská - směr Hradčanská",
-                lines = listOf(
-                    Line(
-                        name = LineName("12"),
-                        type = LineType.TRAM,
-                        directions = listOf("Lehovec")
-                    ),
-                    Line(
-                        name = LineName("18"),
-                        type = LineType.TRAM,
-                        directions = listOf("Petřiny")
-                    ),
-                    Line(
-                        name = LineName("A"),
-                        type = LineType.METRO,
-                        directions = listOf("Nemocnice Motol", "Nemocnice Motol2")
-                    )
-                ),
-                position = GeoPosition(50.0911, 14.4108)
-            )
+    val lines = listOf(
+        Line(
+            name = LineName("12"),
+            type = LineType.TRAM,
+            directions = listOf("Sídliště Barrandov")
+        ),
+        Line(
+            name = LineName("18"),
+            type = LineType.TRAM,
+            directions = listOf("Nádraží Podbaba")
+        ),
+        Line(
+            name = LineName("A"),
+            type = LineType.METRO,
+            directions = listOf("Depo Hostivař")
         )
     )
 
-    val uiState = remember { mutableStateOf(SelectLinesState(station, mutableListOf())) }
-
     DeparturesBoardTheme {
         SelectLinesScreen(
-            selectLinesState = uiState.value,
+            lines = lines,
+            selectedLines = listOf(lines[0]),
+            onLineClick = {},
             onBackArrowClick = {},
             onConfirmClick = {},
         )
