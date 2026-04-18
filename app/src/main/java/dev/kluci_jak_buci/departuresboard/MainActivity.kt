@@ -20,9 +20,6 @@ import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.dashboard
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditor
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.profileEditor
 import dev.kluci_jak_buci.departuresboard.ui.screens.savestation.saveStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.searchStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.selectLines
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -66,16 +63,6 @@ fun App(modifier: Modifier = Modifier) {
         saveStation(
             onBackArrowClick = { navController.popBackStack() }
         )
-        searchStation(
-            navController = navController,
-            onBackArrowClick = { navController.popBackStack() }
-        )
-        selectLines(
-            navController = navController,
-
-            onBackArrowClick = { navController.popBackStack() }
-        )
-
         profileEditor(
             navController = navController,
             onBackArrowClick = { navController.popBackStack() }

@@ -39,17 +39,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +67,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.kluci_jak_buci.departuresboard.R
+import dev.kluci_jak_buci.departuresboard.domain.model.Line
+import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.FoundStationItem
+import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationStandalone
+import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLines
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
 @Composable
@@ -77,10 +85,22 @@ fun ProfileEditorScreen(
     onTimeFilterChange: (TimeFilter) -> Unit,
     onAllDayChange: () -> Unit,
     onBackArrowClick: () -> Unit,
+    onSelectStationClick: (StationName) -> Unit,
     onSaveClick: () -> Unit = {},
-    onSelectStationClick: () -> Unit = {},
-    onSelectLinesClick: () -> Unit = {},
+    onLineClick: (Line) -> Unit = {},
 ) {
+    val selectLinesSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    var showLinesBottomSheet by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+    val searchStationSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    var showStationBottomSheet by remember { mutableStateOf(false) }
+
+
     ScreenScaffold(
         title = stringResource(R.string.create_profile),
         onBackArrowClick = onBackArrowClick,
@@ -133,14 +153,14 @@ fun ProfileEditorScreen(
                         SectionWrapper(
                             title = if (hasStation) stringResource(R.string.departures) else stringResource(R.string.select_station),
                             icon = Icons.Default.Business,
-                            onActionClick = onSelectStationClick,
+                            onActionClick = { showStationBottomSheet = true },
                             actionLabel = if (!hasStation) stringResource(R.string.add) else stringResource(R.string.edit)
                         ) {
                             Column {
                                 if (hasStation) {
                                     FoundStationItem(
                                         station = state.selectedStation!!,
-                                        onClick = {}, // Station item itself is no longer clickable
+                                        onClick = {},
                                         modifier = Modifier.padding(horizontal = 0.dp)
                                     )
 
@@ -167,18 +187,19 @@ fun ProfileEditorScreen(
                                             )
                                         }
 
+                                        val hasLines = state.selectedLines.value.isNotEmpty()
                                         TextButton(
-                                            onClick = onSelectLinesClick,
+                                            onClick = { showLinesBottomSheet = true },
                                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                                         ) {
                                             Icon(
-                                                imageVector = if (state.selectedLines.value.isEmpty()) Icons.Default.Add else Icons.Default.Edit,
+                                                imageVector = if (!hasLines) Icons.Default.Add else Icons.Default.Edit,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(16.dp)
                                             )
                                             Spacer(Modifier.width(4.dp))
                                             Text(
-                                                text = if (state.selectedLines.value.isEmpty()) stringResource(R.string.add) else stringResource(R.string.edit),
+                                                text = if (!hasLines) stringResource(R.string.add) else stringResource(R.string.edit),
                                                 style = MaterialTheme.typography.labelLarge
                                             )
                                         }
@@ -223,6 +244,42 @@ fun ProfileEditorScreen(
                     }
                 }
 
+                if (showStationBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showStationBottomSheet = false },
+                        sheetState = searchStationSheetState,
+//                        dragHandle = null
+                    ) {
+                        SearchStationStandalone(
+                            onStationSelected = { stationName ->
+                                scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
+                                    if (!searchStationSheetState.isVisible) {
+                                        showStationBottomSheet = false
+                                        onSelectStationClick(stationName)
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+
+                if (showLinesBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showLinesBottomSheet = false },
+                        sheetState = selectLinesSheetState,
+//                        dragHandle = null
+                    ) {
+                        SelectLines(
+                            lines = state.resolvedLines,
+                            selectedLines = state.resolvedLines.filter { line ->
+                                state.selectedLines.value.any { it.line == line.name }
+                            },
+                            onLineClick = onLineClick,
+                            modifier = Modifier.padding(top = 24.dp)
+                        )
+                    }
+                }
+
                 // Sticky Save Button
                 Surface(
                     modifier = Modifier
@@ -249,6 +306,13 @@ fun ProfileEditorScreen(
             }
         }
     )
+}
+
+@Composable
+fun BottomSheet(
+
+) {
+
 }
 
 @Composable
@@ -549,6 +613,7 @@ fun ProfileEditorScreenPreview() {
             onNameChange = { state = state.copy(name = state.name.copy(value = it)) },
             onAllDayChange = { state = state.copy(allDay = !state.allDay) },
             onTimeFilterChange = { state = state.copy(timeFilter = state.timeFilter.copy(value = it)) },
+            onSelectStationClick = {},
             onBackArrowClick = {}
         )
     }

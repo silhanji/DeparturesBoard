@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,75 +31,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
-import dev.kluci_jak_buci.departuresboard.domain.model.GeoPosition
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.LineName
 import dev.kluci_jak_buci.departuresboard.domain.model.LineType
-import dev.kluci_jak_buci.departuresboard.domain.model.Platform
-import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
-import dev.kluci_jak_buci.departuresboard.domain.model.Station
-import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
-fun SelectLinesScreen(
+fun SelectLines(
     lines: List<Line>,
     selectedLines: List<Line>,
     onLineClick: (Line) -> Unit,
-    onBackArrowClick: () -> Unit,
-    onConfirmClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    ScreenScaffold(
-        title = stringResource(R.string.select_line),
-        content = { modifier ->
-            Column(
-                modifier = modifier.fillMaxWidth()
-            ) {
-                LazyColumn(
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(
-                        items = lines,
-                        key = { "${it.name.value}_${it.type}_${it.directions.joinToString(",")}" }
-                    ) { line ->
-                        LineItem(
-                            line = line,
-                            isSelected = selectedLines.contains(line),
-                            onClick = { onLineClick(line) }
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedButton(
-                        onClick = onBackArrowClick,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.back),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    Button(
-                        onClick = onConfirmClick,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.confirm),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(
+                items = lines,
+                key = { "${it.name.value}_${it.type}_${it.directions.joinToString(",")}" }
+            ) { line ->
+                LineItem(
+                    line = line,
+                    isSelected = selectedLines.contains(line),
+                    onClick = { onLineClick(line) }
+                )
             }
-        },
-        onBackArrowClick = onBackArrowClick
-    )
+        }
+    }
 }
 
 @Composable
@@ -199,7 +161,6 @@ fun LineItem(
 
 @Preview(
     showBackground = true,
-    showSystemUi = true,
 )
 @Composable
 fun SelectLinesScreenPreview() {
@@ -222,12 +183,11 @@ fun SelectLinesScreenPreview() {
     )
 
     DeparturesBoardTheme {
-        SelectLinesScreen(
+        SelectLines(
             lines = lines,
             selectedLines = listOf(lines[0]),
             onLineClick = {},
-            onBackArrowClick = {},
-            onConfirmClick = {},
+            modifier = Modifier,
         )
     }
 }

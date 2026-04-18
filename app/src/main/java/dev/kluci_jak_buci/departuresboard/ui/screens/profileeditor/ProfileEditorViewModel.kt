@@ -65,6 +65,27 @@ class ProfileEditorViewModel @Inject constructor(
         _uiState.update { it.copy(allDay = !it.allDay) }
     }
 
+    fun toggleLine(line: Line) {
+        val stationName = _uiState.value.selectedStation ?: return
+
+        viewModelScope.launch {
+            val station = stationsRepository.get(stationName) ?: return@launch
+            val platform = station.platforms.find { p -> p.lines.any { it.name == line.name } } ?: return@launch
+
+            val newSelectedLine = SelectedLine(line.name, platform.id)
+
+            _uiState.update { currentState ->
+                val currentList = currentState.selectedLines.value
+                val newList = if (currentList.any { it.line == line.name }) {
+                    currentList.filterNot { it.line == line.name }
+                } else {
+                    currentList + newSelectedLine
+                }
+                currentState.copy(selectedLines = InputField(newList))
+            }
+        }
+    }
+
     fun onStationChanged(stationName: StationName) {
         viewModelScope.launch {
             val station = stationsRepository.get(stationName)
@@ -81,7 +102,7 @@ class ProfileEditorViewModel @Inject constructor(
         _uiState.update { it.copy(selectedLines = InputField(lines)) }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+    @OptIn(ExperimentalUuidApi::class, ExperimentalUuidApi::class)
     fun saveProfile() {
         val currentState = _uiState.value
         if (!currentState.isFormValid || currentState.isSaving) return

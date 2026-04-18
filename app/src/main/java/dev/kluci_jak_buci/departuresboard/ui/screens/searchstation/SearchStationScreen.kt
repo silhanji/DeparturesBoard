@@ -16,66 +16,68 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.kluci_jak_buci.departuresboard.R
-import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
-import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import kotlin.collections.listOf
 
 @Composable
-fun SearchStationScreen(
+fun SearchStationStandalone(
+    onStationSelected: (StationName) -> Unit,
+    viewModel: SearchStationViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier
+) {
+    val searchState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    SearchStation(
+        searchText = searchState.searchText,
+        onSearchTextChange = viewModel::onSearchTextChange,
+        foundStations = searchState.foundStations,
+        onStationSelected = onStationSelected,
+    )
+}
+
+@Composable
+fun SearchStation(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     foundStations: List<StationName>,
     onStationSelected: (StationName) -> Unit,
-    onBackArrowClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    ScreenScaffold(
-        title = stringResource(R.string.choose_station),
-        content = { modifier ->
-            Column(
-                modifier = modifier
-            ) {
-                SearchInput(
-                    search = searchText,
-                    onSearchChange = onSearchTextChange
-                )
-                FoundStations(
-                    stations = foundStations,
-                    onStationSelected = onStationSelected,
-                )
-            }
-        },
-        onBackArrowClick = onBackArrowClick
-    )
+    Column(
+        modifier = modifier
+    ) {
+        SearchInput(
+            search = searchText,
+            onSearchChange = onSearchTextChange
+        )
+        FoundStations(
+            stations = foundStations,
+            onStationSelected = onStationSelected,
+        )
+    }
 }
 
 @Composable
@@ -197,22 +199,18 @@ fun FoundStationItem(
         }
     }
 }
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-)
+@Preview
 @Composable
-fun SearchStationScreenPreview() {
+fun SearchStationPreview() {
     DeparturesBoardTheme {
-        SearchStationScreen(
+        SearchStation(
             searchText = "Cho",
             onSearchTextChange = { },
             foundStations = listOf(
                 StationName("Háje"), StationName("Opatov"), StationName("Chodov"), StationName("Roztyly"), StationName("Kačerov"), StationName("Budějovická"), StationName("Pankrác"),
                 StationName("Pražského povstání"), StationName("Vyšehrad"), StationName("I.P. Pavlova"), StationName("Hlavní nádraží"), StationName("Florenc")
             ),
-            onStationSelected = { },
-            onBackArrowClick = { },
+            onStationSelected = { }
         )
     }
 }

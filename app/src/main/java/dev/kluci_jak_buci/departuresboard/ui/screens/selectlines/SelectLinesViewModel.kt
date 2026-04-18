@@ -52,25 +52,3 @@ class SelectLinesState(val station: Station, initialSelectedLines: List<Selected
     }
 }
 
-@HiltViewModel
-class SelectLinesViewModel @Inject constructor(
-    private val stationsRepository: StationsRepository,
-    savedStateHandle: SavedStateHandle
-) : ViewModel() {
-    private val selectLinesArgs = savedStateHandle.toRoute<SelectLines>(SelectLines.typeMap)
-    
-    private val _state = MutableStateFlow<SelectLinesState?>(null)
-    val state = _state.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            val station = stationsRepository.get(StationName(selectLinesArgs.stationName))
-            if (station != null) {
-                _state.value = SelectLinesState(
-                    station = station,
-                    initialSelectedLines = selectLinesArgs.initialSelectedLines.map { it.toDomain() }
-                )
-            }
-        }
-    }
-}

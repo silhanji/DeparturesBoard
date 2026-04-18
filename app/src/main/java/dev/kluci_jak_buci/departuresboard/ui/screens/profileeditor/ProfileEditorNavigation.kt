@@ -8,14 +8,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import dev.kluci_jak_buci.departuresboard.domain.model.StationName
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationResult
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.removeResult
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.resultKey
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLines
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLinesResult
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.toParcelable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,28 +20,6 @@ fun NavGraphBuilder.profileEditor(
 ) {
     composable<ProfileEditor> { backStackEntry ->
         val viewModel = hiltViewModel<ProfileEditorViewModel>()
-
-        val stationResult by backStackEntry.savedStateHandle
-            .getStateFlow<SearchStationResult?>(resultKey<SearchStationResult>(), null)
-            .collectAsStateWithLifecycle()
-
-        val linesResult by backStackEntry.savedStateHandle
-            .getStateFlow<SelectLinesResult?>(resultKey<SelectLinesResult>(), null)
-            .collectAsStateWithLifecycle()
-
-        LaunchedEffect(stationResult) {
-            stationResult?.let {
-                viewModel.onStationChanged(StationName(it.station))
-                backStackEntry.savedStateHandle.removeResult<SearchStationResult>()
-            }
-        }
-
-        LaunchedEffect(linesResult) {
-            linesResult?.let { result ->
-                viewModel.onLinesChanged(result.lines.map { it.toDomain() })
-                backStackEntry.savedStateHandle.removeResult<SelectLinesResult>()
-            }
-        }
 
         val state by viewModel.uiState.collectAsState()
 
@@ -66,19 +36,8 @@ fun NavGraphBuilder.profileEditor(
             onAllDayChange = viewModel::onAllDayChange,
             onBackArrowClick = onBackArrowClick,
             onSaveClick = viewModel::saveProfile,
-            onSelectStationClick = {
-                navController.navigate(SearchStation)
-            },
-            onSelectLinesClick = {
-                state.selectedStation?.let { station ->
-                    navController.navigate(
-                        SelectLines(
-                            stationName = station.value,
-                            initialSelectedLines = state.selectedLines.value.map { it.toParcelable() }
-                        )
-                    )
-                }
-            }
+            onSelectStationClick = viewModel::onStationChanged,
+            onLineClick = viewModel::toggleLine
         )
     }
 }
