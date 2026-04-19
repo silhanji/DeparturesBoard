@@ -77,7 +77,7 @@ fun LineItem(
     val containerColor = if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
-        MaterialTheme.colorScheme.surface
+        MaterialTheme.colorScheme.surfaceContainerLowest
     }
 
     val contentColor = if (isSelected) {
@@ -96,9 +96,9 @@ fun LineItem(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 2.dp
-        ),
+//        elevation = CardDefaults.cardElevation(
+//            defaultElevation = if (isSelected) 8.dp else 2.dp
+//        ),
         border = if (isSelected) {
             BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
         } else {
