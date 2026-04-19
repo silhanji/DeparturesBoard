@@ -87,16 +87,12 @@ fun ProfileEditorScreen(
     onLineClick: (Line) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val selectLinesSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val selectLinesSheetState = rememberModalBottomSheetState()
 
     var showLinesBottomSheet by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
-    val searchStationSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val searchStationSheetState = rememberModalBottomSheetState()
     var showStationBottomSheet by remember { mutableStateOf(false) }
 
 
@@ -180,13 +176,6 @@ fun ProfileEditorScreen(
                         BottomSheetHeader(
                             title = stringResource(R.string.select_line),
                             modifier = Modifier.fillMaxWidth(),
-                            onBackClick = {
-                                scope.launch { selectLinesSheetState.hide() }.invokeOnCompletion {
-                                    if (!selectLinesSheetState.isVisible) {
-                                        showLinesBottomSheet = false
-                                    }
-                                }
-                            },
                             onConfirmClick = {
                                 scope.launch { selectLinesSheetState.hide() }.invokeOnCompletion {
                                     if (!selectLinesSheetState.isVisible) {
@@ -317,7 +306,7 @@ fun StationOutlinedField(
             value = textValue,
             onValueChange = {},
             readOnly = true,
-            label = { Text(stringResource(R.string.select_station)) },
+            label = { Text(stringResource(R.string.station)) },
             placeholder = { Text(stringResource(R.string.station_name)) },
             leadingIcon = {
                 Icon(

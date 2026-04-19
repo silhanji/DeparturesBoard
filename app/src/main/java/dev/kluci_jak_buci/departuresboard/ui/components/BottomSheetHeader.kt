@@ -2,6 +2,7 @@ package dev.kluci_jak_buci.departuresboard.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -46,6 +47,9 @@ fun BottomSheetHeader(
                     )
                 }
             } else {
+                Spacer(
+                    modifier = Modifier
+                )
                 // Spacer to keep title alignment if no back button but confirm button exists
                 // Or we can just let it be start-aligned.
                 // Given "SpaceBetween", if onBackClick is null, title will be at the start.

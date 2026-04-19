@@ -30,7 +30,7 @@ data class InputField<T>(
 data class ProfileEditorState(
     val name: InputField<String> = InputField(""),
     val timeFilter: InputField<TimeFilter> = InputField(TimeFilter(LocalTime(0, 0), LocalTime(23, 45))),
-    val allDay: Boolean = false,
+    val allDay: Boolean = true,
     val vehicleFilter: VehicleFilter? = null,
     val selectedLines: InputField<List<SelectedLine>> = InputField(emptyList()),
     val selectedStation: StationName? = null,
