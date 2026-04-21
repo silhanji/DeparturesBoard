@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,9 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Tram
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -56,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
@@ -108,7 +104,7 @@ fun ProfileEditorScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        DetailsCard(
+                        DetailsSection(
                             name = state.name.value,
                             onNameChange = onNameChange,
                             isError = state.name.isError,
@@ -117,7 +113,7 @@ fun ProfileEditorScreen(
                     }
 
                     item {
-                        LinesCard(
+                        LinesSection(
                             stationName = state.selectedStation,
                             onStationClick = { showStationBottomSheet = true },
                             selectedLines = state.resolvedLines.filter { line ->
@@ -128,7 +124,7 @@ fun ProfileEditorScreen(
                     }
 
                     item {
-                        TimeFilterCard(
+                        TimeFilterSection(
                             allDay = state.allDay,
                             timeFilter = state.timeFilter.value,
                             onAllDayChange = onAllDayChange,
@@ -224,77 +220,114 @@ fun ProfileEditorScreen(
 }
 
 @Composable
-fun DetailsCard(
+private fun Section(
+    name: String,
+    actions: @Composable (() -> Unit)? = null,
+    content: @Composable (() -> Unit)
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                actions?.let {
+                    it()
+                }
+            }
+
+            content()
+        }
+    }
+}
+
+@Composable
+private fun DetailsSection(
     name: String,
     onNameChange: (String) -> Unit,
     isError: Boolean,
     errorMessage: String?
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.profile_details),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
-                label = { Text(text = stringResource(R.string.name)) },
-                isError = isError,
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    errorMessage?.let { Text(text = it) }
-                },
-                shape = RoundedCornerShape(12.dp)
-            )
-        }
+    Section(name = stringResource(R.string.profile_details)) {
+        OutlinedField(
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text(text = stringResource(R.string.name)) },
+            isError = isError,
+            supportingText = {
+                errorMessage?.let { Text(text = it) }
+            },
+        )
     }
 }
 
 @Composable
-fun LinesCard(
+private fun LinesSection(
     stationName: StationName?,
     onStationClick: () -> Unit,
     selectedLines: List<Line>,
     onLinesClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
+    Section(
+        name = stringResource(R.string.lines)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.lines),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        StationOutlinedField(
+            stationName = stationName,
+            onClick = onStationClick
+        )
 
-            StationOutlinedField(
-                stationName = stationName,
-                onClick = onStationClick
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LinesOutlinedField(
-                selectedLines = selectedLines,
-                onClick = onLinesClick,
-                enabled = stationName != null
-            )
-        }
+        LinesOutlinedField(
+            selectedLines = selectedLines,
+            onClick = onLinesClick,
+            enabled = stationName != null
+        )
     }
 }
 
+/**
+ * Wrapper over OutlinedTextField which sets common app input style
+ */
 @Composable
-fun StationOutlinedField(
+private fun OutlinedField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label:  @Composable (() -> Unit)? = null,
+    placeholder:  @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    readOnly: Boolean = false,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        readOnly = readOnly,
+        label = label,
+        placeholder = placeholder,
+        leadingIcon = leadingIcon,
+        isError = isError,
+        supportingText = supportingText,
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun StationOutlinedField(
     stationName: StationName?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -302,7 +335,7 @@ fun StationOutlinedField(
     val textValue = stationName?.value ?: ""
 
     Box(modifier = modifier) {
-        OutlinedTextField(
+        OutlinedField(
             value = textValue,
             onValueChange = {},
             readOnly = true,
@@ -313,9 +346,7 @@ fun StationOutlinedField(
                     imageVector = Icons.Default.Business,
                     contentDescription = null
                 )
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
+            }
         )
         Box(
             Modifier
@@ -326,17 +357,45 @@ fun StationOutlinedField(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LinesOutlinedField(
+private fun LinesOutlinedField(
     selectedLines: List<Line>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isError: Boolean = false,
 ) {
+    MultiLineClickableOutlineField(
+        lines = selectedLines.map { "${it.name.value} → ${it.directions.joinToString(", ")}" },
+        onClick = onClick,
+        enabled = enabled,
+        isError = isError,
+        modifier = modifier,
+        label = { Text(stringResource(R.string.lines)) },
+        placeholder = { Text(stringResource(R.string.select_line)) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Tram,
+                contentDescription = null
+            )
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MultiLineClickableOutlineField(
+    lines: List<String>,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    label:  @Composable (() -> Unit)? = null,
+    placeholder:  @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    isError: Boolean = false,
+) {
     val interactionSource = remember { MutableInteractionSource() }
-    val textValue = selectedLines.joinToString(" • ") { it.name.value }
+    val textValue = lines.joinToString(" • ") { it }
 
     Box(modifier = modifier) {
         BasicTextField(
@@ -353,24 +412,24 @@ fun LinesOutlinedField(
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = textValue,
                     innerTextField = {
-                        if (selectedLines.isEmpty()) {
+                        if (lines.isEmpty()) {
                             innerTextField()
                         } else {
                             Column(
                                 modifier = Modifier.padding(vertical = 4.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                selectedLines.take(3).forEach { line ->
+                                lines.take(3).forEach { line ->
                                     Text(
-                                        text = "${line.name.value} → ${line.directions.joinToString(", ")}",
+                                        text = line,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                 }
-                                if (selectedLines.size > 3) {
+                                if (lines.size > 3) {
                                     Text(
-                                        text = "+${selectedLines.size - 3} more",
+                                        text = "+${lines.size - 3} more",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -383,14 +442,9 @@ fun LinesOutlinedField(
                     visualTransformation = VisualTransformation.None,
                     interactionSource = interactionSource,
                     isError = isError,
-                    label = { Text(stringResource(R.string.lines)) },
-                    placeholder = { Text(stringResource(R.string.select_line)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Tram,
-                            contentDescription = null
-                        )
-                    },
+                    label = label,
+                    placeholder = placeholder,
+                    leadingIcon = leadingIcon,
                     container = {
                         OutlinedTextFieldDefaults.Container(
                             enabled = enabled,
@@ -413,70 +467,55 @@ fun LinesOutlinedField(
 }
 
 @Composable
-fun TimeFilterCard(
+private fun TimeFilterSection(
     allDay: Boolean,
     timeFilter: TimeFilter,
     onAllDayChange: () -> Unit,
     onTimeFilterChange: (TimeFilter) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    Section(
+        name = stringResource(R.string.time_filter),
+        actions = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(R.string.time_filter),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    text = stringResource(R.string.all_day),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.all_day),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Switch(
-                        checked = allDay,
-                        onCheckedChange = { onAllDayChange() }
-                    )
-                }
+                Switch(
+                    checked = allDay,
+                    onCheckedChange = { onAllDayChange() }
+                )
             }
+        }
+    ) {
+        AnimatedVisibility(
+            visible = !allDay,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TimeInputField(
+                        label = stringResource(R.string.from),
+                        value = timeFilter.from,
+                        onValueChange = {
+                            onTimeFilterChange(timeFilter.copy(from = it))
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
 
-            AnimatedVisibility(
-                visible = !allDay,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        TimeInputField(
-                            label = stringResource(R.string.from),
-                            value = timeFilter.from,
-                            onValueChange = {
-                                onTimeFilterChange(timeFilter.copy(from = it))
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        TimeInputField(
-                            label = stringResource(R.string.to),
-                            value = timeFilter.to,
-                            onValueChange = {
-                                onTimeFilterChange(timeFilter.copy(to = it))
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                    TimeInputField(
+                        label = stringResource(R.string.to),
+                        value = timeFilter.to,
+                        onValueChange = {
+                            onTimeFilterChange(timeFilter.copy(to = it))
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
@@ -484,7 +523,7 @@ fun TimeFilterCard(
 }
 
 @Composable
-fun TimeInputField(
+private fun TimeInputField(
     label: String,
     value: LocalTime,
     onValueChange: (LocalTime) -> Unit,
@@ -493,13 +532,11 @@ fun TimeInputField(
     var showTimePicker by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        OutlinedTextField(
+        OutlinedField(
             value = value.formatHourMinute(),
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
             leadingIcon = {
                 Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(18.dp))
             }
@@ -527,7 +564,7 @@ fun TimeInputField(
 }
 
 @Composable
-fun TimePickerWithDialog(
+private fun TimePickerWithDialog(
     initialTime: LocalTime,
     onConfirm: (Int, Int) -> Unit,
     onDismiss: () -> Unit,
@@ -556,27 +593,6 @@ fun TimePickerWithDialog(
             }
         }
     )
-}
-
-@Composable
-private fun ProfileHeader() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Text(
-            text = "Customize your view",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = "Configure which departures you want to see and when they should be active.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
 }
 
 private fun LocalTime.formatHourMinute(): String {
