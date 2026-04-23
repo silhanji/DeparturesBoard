@@ -35,7 +35,7 @@ import dev.kluci_jak_buci.departuresboard.ui.components.MultiLineClickableField
 import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditorState
 import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationStandalone
-import dev.kluci_jak_buci.departuresboard.ui.screens.selectlines.SelectLines
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
 import kotlinx.coroutines.launch
 
 @Composable

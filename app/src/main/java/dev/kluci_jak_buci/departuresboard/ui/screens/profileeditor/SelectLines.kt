@@ -1,6 +1,5 @@
-package dev.kluci_jak_buci.departuresboard.ui.screens.selectlines
+package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,26 +14,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.LineName
 import dev.kluci_jak_buci.departuresboard.domain.model.LineType
-import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 
 @Composable
@@ -71,7 +64,6 @@ fun LineItem(
     line: Line,
     isSelected: Boolean,
     onClick: () -> Unit,
-    showCheckBox: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val containerColor = if (isSelected) {
@@ -96,9 +88,6 @@ fun LineItem(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-//        elevation = CardDefaults.cardElevation(
-//            defaultElevation = if (isSelected) 8.dp else 2.dp
-//        ),
         border = if (isSelected) {
             BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
         } else {
@@ -111,12 +100,10 @@ fun LineItem(
                 .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (showCheckBox) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick() }
-                )
-            }
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = { onClick() }
+            )
 
             Spacer(modifier = Modifier.width(12.dp))
 
