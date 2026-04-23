@@ -21,6 +21,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 
+/**
+ * Base app visuals of header for bottom sheets.
+ */
 @Composable
 fun BottomSheetHeader(
     title: String,
