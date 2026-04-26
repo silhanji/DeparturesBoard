@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
+import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
 import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.ui.components.BottomSheetHeader
@@ -41,6 +42,15 @@ import kotlinx.coroutines.launch
 
 fun Station.getLines(): List<Line> {
     return this.platforms.flatMap{ it.lines }
+}
+
+fun Station.getSelectedLines(selectedLines: List<SelectedLine>): List<Line> {
+    return this.platforms
+        .flatMap { platform -> platform.lines.map { line -> Pair( platform.id, line)} }
+        .filter{ (platformId, line) ->
+            selectedLines.any { it.platform == platformId && it.line == line.name }
+        }
+        .map { (_, line) -> line }
 }
 
 @Composable
@@ -59,11 +69,10 @@ fun LinesSection(
             stationName = state.selectedStation?.name,
             onClick = { showStationBottomSheet = true }
         )
-        val stationLines = state.selectedStation?.getLines() ?: emptyList()
+        val selectedLines = state.selectedStation
+            ?.getSelectedLines(state.selectedLines.value) ?: emptyList()
         LinesOutlinedField(
-            selectedLines = stationLines.filter { line ->
-                state.selectedLines.value.any { it.line == line.name }
-            },
+            selectedLines = selectedLines,
             onClick = { showLinesBottomSheet = true },
             enabled = state.selectedStation != null
         )
@@ -151,13 +160,9 @@ private fun SelectLinesBottomSheet(
                 }
             )
             val stationLines = state.selectedStation?.getLines() ?: emptyList()
+            val selectedLines = state.selectedStation
+                ?.getSelectedLines(state.selectedLines.value) ?: emptyList()
 
-            val selectedLines = state.selectedStation?.platforms
-                ?.flatMap { platform -> platform.lines.map { line -> Pair( platform.id, line)} }
-                ?.filter{ (platformId, line) ->
-                    state.selectedLines.value.any { it.platform == platformId && it.line == line.name }
-                }
-                ?.map { (_, line) -> line } ?: emptyList()
             SelectLines(
                 lines = stationLines,
                 selectedLines = selectedLines,

@@ -33,6 +33,7 @@ fun MultiLineClickableField(
     lines: List<String>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    maxLines: Int = 3,
     label:  @Composable (() -> Unit)? = null,
     placeholder:  @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -66,7 +67,7 @@ fun MultiLineClickableField(
                                 modifier = Modifier.padding(vertical = 4.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                lines.take(3).forEach { line ->
+                                lines.take(maxLines).forEach { line ->
                                     Text(
                                         text = line,
                                         maxLines = 1,
@@ -74,9 +75,9 @@ fun MultiLineClickableField(
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                 }
-                                if (lines.size > 3) {
+                                if (lines.size > maxLines) {
                                     Text(
-                                        text = "+${lines.size - 3} more",
+                                        text = "+${lines.size - maxLines} more",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

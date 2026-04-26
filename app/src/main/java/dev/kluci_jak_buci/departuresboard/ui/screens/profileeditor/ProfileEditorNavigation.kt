@@ -1,9 +1,9 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -19,7 +19,7 @@ fun NavGraphBuilder.profileEditor(
     composable<ProfileEditor> {
         val viewModel = hiltViewModel<ProfileEditorViewModel>()
 
-        val state by viewModel.uiState.collectAsState()
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(state.isSaveSuccessful) {
             if (state.isSaveSuccessful) {

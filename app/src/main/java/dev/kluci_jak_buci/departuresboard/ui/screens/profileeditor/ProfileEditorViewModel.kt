@@ -43,10 +43,11 @@ data class ProfileEditorState(
     val isSaving: Boolean = false,
     val isSaveSuccessful: Boolean = false
 ) {
-    val isFormValid: Boolean = !name.isError &&
-            name.value.isNotBlank() &&
-            !timeFilter.isError &&
-            selectedLines.value.isNotEmpty()
+    val isFormValid: Boolean =
+        !name.isError &&
+        name.value.isNotBlank() &&
+        !timeFilter.isError &&
+        selectedLines.value.isNotEmpty()
 }
 
 @HiltViewModel
@@ -88,9 +89,9 @@ class ProfileEditorViewModel @Inject constructor(
                 val currentList = currentState.selectedLines.value
 
                 // add to selected lines, if already selected, deselect
-                val lineAlreadySelected = currentList.any { it == line }
+                val lineAlreadySelected = currentList.any { it == newSelectedLine }
                 val newSelectedLines = if (lineAlreadySelected) {
-                    currentList.filterNot { it == line }
+                    currentList.filterNot { it == newSelectedLine }
                 } else {
                     currentList + newSelectedLine
                 }
