@@ -40,11 +40,17 @@ import dev.kluci_jak_buci.departuresboard.ui.components.searchstation.SearchStat
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
 import kotlinx.coroutines.launch
 
-fun Station.getLines(): List<Line> {
+/**
+ * Gets all lines irrespective of platform.
+ */
+private fun Station.getLines(): List<Line> {
     return this.platforms.flatMap{ it.lines }
 }
 
-fun Station.getSelectedLines(selectedLines: List<SelectedLine>): List<Line> {
+/**
+ * Maps the selected lines to their corresponding Line object for if the station has the line.
+ */
+private fun Station.getSelectedLines(selectedLines: List<SelectedLine>): List<Line> {
     return this.platforms
         .flatMap { platform -> platform.lines.map { line -> Pair( platform.id, line)} }
         .filter{ (platformId, line) ->
