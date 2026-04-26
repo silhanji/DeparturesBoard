@@ -46,7 +46,7 @@ fun SelectLines(
             modifier = Modifier.weight(1f)
         ) {
             items(
-                items = lines,
+                items = lines.sortedBy { it.name.value },
                 key = { "${it.name.value}_${it.type}_${it.directions.joinToString(",")}" }
             ) { line ->
                 LineItem(

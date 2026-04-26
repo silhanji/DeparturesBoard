@@ -208,7 +208,7 @@ private fun LinesOutlinedField(
     isError: Boolean = false,
 ) {
     MultiLineClickableField(
-        lines = selectedLines.map { "${it.name.value} → ${it.directions.joinToString(", ")}" },
+        lines = selectedLines.map { "${it.name.value} → ${it.directions.joinToString(", ")}" }.sortedBy { it },
         onClick = onClick,
         enabled = enabled,
         isError = isError,

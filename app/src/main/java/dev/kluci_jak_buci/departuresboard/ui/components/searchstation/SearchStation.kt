@@ -125,7 +125,7 @@ fun FoundStations(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(
-                items = stations,
+                items = stations.sortedBy { it.value },
                 key = { station -> station.value }
             ) { station ->
                 StationItem(
