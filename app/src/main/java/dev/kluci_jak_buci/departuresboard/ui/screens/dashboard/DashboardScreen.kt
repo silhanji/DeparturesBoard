@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -128,7 +129,7 @@ private fun TopBar(
     )
 
     TopAppBar(
-        title = { },
+        title = { Text("Odjezdy") },
         actions = {
             IconButton(
                 onClick = { onSettingsClick() }
@@ -159,7 +160,7 @@ private fun Section(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit = { },
 ) {
-    Column(modifier = modifier.padding(top = 32.dp)) {
+    Column(modifier = modifier.padding(bottom = 32.dp)) {
         SectionLabel(section)
         Spacer(modifier = Modifier.height(8.dp))
         content()
@@ -308,7 +309,8 @@ private fun FirstDeparture(
 
         if(departure != null) {
             LeavesAtCountdown(
-                untilDeparture = departure.untilLeaves
+                untilDeparture = departure.untilLeaves,
+                untilShouldHaveLeft = departure.untilShouldHaveLeft,
             )
         }
     }
@@ -335,7 +337,8 @@ private fun NextDeparture(
         )
         LeavesAtCountdown(
             untilDeparture = departure.untilLeaves,
-            largeMinutes = false,
+            untilShouldHaveLeft = departure.untilShouldHaveLeft,
+            large = false,
         )
     }
 }
@@ -347,7 +350,8 @@ private fun DepartureDetails(
 ) {
     Column(modifier) {
         Text(
-            text = "Smer: ${departure.headsign}",
+            text = "${departure.headsign}".uppercase(),
+            fontWeight = FontWeight.SemiBold,
             style = MaterialTheme.typography.bodyMedium,
         )
         DepartureTime(
@@ -411,32 +415,83 @@ private fun DepartureTime(
             text = "${hour}:${minute}",
             style = MaterialTheme.typography.bodyMedium,
         )
-
-        if(delay.inWholeMinutes > 0) {
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "(+${delay.inWholeMinutes}min)",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
     }
 }
 
 @Composable
 private fun LeavesAtCountdown(
     untilDeparture: Duration,
+    untilShouldHaveLeft: Duration,
     modifier: Modifier = Modifier,
-    largeMinutes: Boolean = true,
+    large: Boolean = true,
 ) {
-    val style = if(largeMinutes)
+    if(untilDeparture > untilShouldHaveLeft) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            modifier = modifier
+        ) {
+            Countdown(
+                duration = untilDeparture,
+                large = large,
+                isDelayed = true,
+                isValid = true,
+            )
+            Countdown(
+                duration = untilShouldHaveLeft,
+                large = false,
+                isValid = false,
+                isDelayed = false,
+            )
+        }
+    }
+    else {
+        Countdown(
+            duration = untilDeparture,
+            large = large,
+            isDelayed = false,
+            isValid = true,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun Countdown(
+    duration: Duration,
+    modifier: Modifier = Modifier,
+    large: Boolean = true,
+    isValid: Boolean = true,
+    isDelayed: Boolean = false,
+) {
+    var style = if(large)
         MaterialTheme.typography.headlineSmall
     else
         MaterialTheme.typography.bodyMedium
 
-    if(untilDeparture.inWholeMinutes == 0L) {
+    var minutesStyle = MaterialTheme.typography.bodyMedium
+
+    if(isDelayed) {
+        style = style.copy(
+            color = MaterialTheme.colorScheme.error,
+        )
+        minutesStyle = minutesStyle.copy(
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+
+    if(! isValid) {
+        style = style.copy(
+            textDecoration = TextDecoration.LineThrough,
+        )
+        minutesStyle = minutesStyle.copy(
+            textDecoration = TextDecoration.LineThrough,
+        )
+    }
+
+
+    if(duration.inWholeMinutes == 0L) {
         Text(
-            text = "Teď",
+            text = "Nyni",
             fontWeight = FontWeight.Bold,
             style = style,
             modifier = modifier,
@@ -444,16 +499,15 @@ private fun LeavesAtCountdown(
     } else {
         Row(modifier = modifier) {
             Text(
-                text = "${untilDeparture.inWholeMinutes}",
+                text = "${duration.inWholeMinutes}",
                 fontWeight = FontWeight.Bold,
                 style = style,
                 modifier = Modifier.alignByBaseline(),
             )
-            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "min",
+                text = " min",
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyMedium,
+                style = minutesStyle,
                 modifier = Modifier.alignByBaseline(),
             )
         }
@@ -533,22 +587,25 @@ fun DashboardScreenPreview() {
                         DashboardDeparture(
                             line = "134",
                             leavesAt = LocalTime(15, 1, 0, 0),
-                            untilLeaves = 2.minutes,
-                            delay = (-2).minutes,
+                            untilLeaves = 4.minutes,
+                            untilShouldHaveLeft = 1.minutes,
+                            delay = 3.minutes,
                             headsign = "Dvorce",
                         ),
                         DashboardDeparture(
                             line = "124",
                             leavesAt = LocalTime(15, 2, 0, 0),
                             untilLeaves = 2.minutes,
+                            untilShouldHaveLeft = 0.minutes,
                             delay = 2.minutes,
                             headsign = "Zelený Pruh",
                         ),
                         DashboardDeparture(
                             line = "134",
                             leavesAt = LocalTime(15, 5, 0, 0),
-                            untilLeaves = 5.minutes,
-                            delay = (-2).minutes,
+                            untilLeaves = 7.minutes,
+                            untilShouldHaveLeft = 5.minutes,
+                            delay = 2.minutes,
                             headsign = "Dvorce",
                         ),
                     )
@@ -567,6 +624,7 @@ fun DashboardScreenPreview() {
                                 line = "C",
                                 leavesAt = LocalTime(15, 0, 0, 0),
                                 untilLeaves = 0.minutes,
+                                untilShouldHaveLeft = 0.minutes,
                                 delay = 0.minutes,
                                 headsign = "Haje",
                             ),
@@ -574,6 +632,7 @@ fun DashboardScreenPreview() {
                                 line = "C",
                                 leavesAt = LocalTime(15, 2, 0, 0),
                                 untilLeaves = 2.minutes,
+                                untilShouldHaveLeft = 0.minutes,
                                 delay = 2.minutes,
                                 headsign = "Haje",
                             ),
@@ -581,6 +640,7 @@ fun DashboardScreenPreview() {
                                 line = "C",
                                 leavesAt = LocalTime(15, 5, 0, 0),
                                 untilLeaves = 5.minutes,
+                                untilShouldHaveLeft = 7.minutes,
                                 delay = (-2).minutes,
                                 headsign = "Kacerov",
                             ),

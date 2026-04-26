@@ -33,6 +33,7 @@ data class DashboardDeparture(
     val line: String,
     val leavesAt: LocalTime,
     val untilLeaves: Duration,
+    val untilShouldHaveLeft: Duration,
     val delay: Duration,
     val headsign: String,
 )
@@ -69,7 +70,8 @@ class DashboardViewModel @Inject constructor(
                             DashboardDeparture(
                                 line = departure.line.value,
                                 leavesAt = departure.predicted.toLocalDateTime(timeZone).time,
-                                untilLeaves = (departure.predicted - now),
+                                untilShouldHaveLeft = departure.scheduled - now,
+                                untilLeaves = departure.predicted - now,
                                 delay = departure.delay,
                                 headsign = departure.headsign,
                             )
