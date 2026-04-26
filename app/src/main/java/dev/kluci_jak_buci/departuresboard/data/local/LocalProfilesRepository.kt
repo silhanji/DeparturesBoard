@@ -18,57 +18,57 @@ class LocalProfilesRepository @Inject constructor() : ProfilesRepository {
 
     private val _profiles = MutableStateFlow<List<Profile>>(emptyList())
 
-//    init {
-//        // Some predefined profiles until profile creation is implemented
-//        _profiles.update {
-//            listOf(
-//                Profile(
-//                    id = ProfileId.generate(),
-//                    name = "Matfyz",
-//                    selectedLines = listOf(
-//                        SelectedLine(
-//                            line = LineName("22"),
-//                            platform = PlatformId("U361Z1P")
-//                        ),
-//                        SelectedLine(
-//                            line = LineName("15"),
-//                            platform = PlatformId("U361Z1P")
-//                        ),
-//                    ),
-//                    timeFilter = null,
-//                    vehicleFilter = null,
-//                ),
-//                Profile(
-//                    id = ProfileId.generate(),
-//                    name = "Budějovická (práce)",
-//                    selectedLines = listOf(
-//                        SelectedLine(
-//                            line = LineName("124"),
-//                            platform = PlatformId("U50Z6P")
-//                        ),
-//                        SelectedLine(
-//                            line = LineName("134"),
-//                            platform = PlatformId("U50Z6P")
-//                        ),
-//                    ),
-//                    timeFilter = null,
-//                    vehicleFilter = null,
-//                ),
-//                Profile(
-//                    id = ProfileId.generate(),
-//                    name = "Vyšehrad",
-//                    selectedLines = listOf(
-//                        SelectedLine(
-//                            line = LineName("C"),
-//                            platform = PlatformId("U527Z101P")
-//                        ),
-//                    ),
-//                    timeFilter = null,
-//                    vehicleFilter = null,
-//                )
-//            )
-//        }
-//    }
+    init {
+        // Some predefined profiles until profile creation is implemented
+        _profiles.update {
+            listOf(
+                Profile(
+                    id = ProfileId.generate(),
+                    name = "Matfyz",
+                    selectedLines = listOf(
+                        SelectedLine(
+                            line = LineName("22"),
+                            platform = PlatformId("U361Z1P")
+                        ),
+                        SelectedLine(
+                            line = LineName("15"),
+                            platform = PlatformId("U361Z1P")
+                        ),
+                    ),
+                    timeFilter = null,
+                    vehicleFilter = null,
+                ),
+                Profile(
+                    id = ProfileId.generate(),
+                    name = "Budějovická (práce)",
+                    selectedLines = listOf(
+                        SelectedLine(
+                            line = LineName("124"),
+                            platform = PlatformId("U50Z6P")
+                        ),
+                        SelectedLine(
+                            line = LineName("134"),
+                            platform = PlatformId("U50Z6P")
+                        ),
+                    ),
+                    timeFilter = null,
+                    vehicleFilter = null,
+                ),
+                Profile(
+                    id = ProfileId.generate(),
+                    name = "Vyšehrad",
+                    selectedLines = listOf(
+                        SelectedLine(
+                            line = LineName("C"),
+                            platform = PlatformId("U527Z101P")
+                        ),
+                    ),
+                    timeFilter = null,
+                    vehicleFilter = null,
+                )
+            )
+        }
+    }
 
     override fun get(id: ProfileId): Flow<Profile?> {
         return _profiles
