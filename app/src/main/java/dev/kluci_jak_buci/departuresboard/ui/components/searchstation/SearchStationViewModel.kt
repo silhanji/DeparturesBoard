@@ -1,4 +1,4 @@
-package dev.kluci_jak_buci.departuresboard.ui.screens.searchstation
+package dev.kluci_jak_buci.departuresboard.ui.components.searchstation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

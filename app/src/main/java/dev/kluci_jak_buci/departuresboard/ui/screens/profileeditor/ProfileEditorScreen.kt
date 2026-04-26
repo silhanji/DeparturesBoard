@@ -44,10 +44,10 @@ fun ProfileEditorScreen(
     onTimeFilterChange: (TimeFilter) -> Unit,
     onAllDayChange: () -> Unit,
     onBackArrowClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onSaveClick: () -> Unit = {},
-    onSelectStationClick: (StationName) -> Unit,
+    onStationClick: (StationName) -> Unit,
     onLineClick: (Line) -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     ScreenScaffold(
         title = stringResource(R.string.create_profile),
@@ -72,7 +72,7 @@ fun ProfileEditorScreen(
                     item {
                         LinesSection(
                             state = state,
-                            onSelectStationClick = onSelectStationClick,
+                            onStationClick = onStationClick,
                             onLineClick = onLineClick
                         )
                     }
@@ -87,7 +87,6 @@ fun ProfileEditorScreen(
                     }
                 }
 
-                // Sticky Save Button
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -126,7 +125,7 @@ fun ProfileEditorScreenPreview() {
             onNameChange = { state = state.copy(name = state.name.copy(value = it)) },
             onAllDayChange = { state = state.copy(allDay = !state.allDay) },
             onTimeFilterChange = { state = state.copy(timeFilter = state.timeFilter.copy(value = it)) },
-            onSelectStationClick = {},
+            onStationClick = {},
             onBackArrowClick = {}
         )
     }

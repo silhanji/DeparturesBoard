@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 fun MultiLineClickableField(
     lines: List<String>,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     label:  @Composable (() -> Unit)? = null,
     placeholder:  @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -54,7 +54,7 @@ fun MultiLineClickableField(
                     alpha = 0.38f
                 )
             ),
-            modifier = Modifier.Companion.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = textValue,
@@ -63,14 +63,14 @@ fun MultiLineClickableField(
                             innerTextField()
                         } else {
                             Column(
-                                modifier = Modifier.Companion.padding(vertical = 4.dp),
+                                modifier = Modifier.padding(vertical = 4.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 lines.take(3).forEach { line ->
                                     Text(
                                         text = line,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Companion.Ellipsis,
+                                        overflow = TextOverflow.Ellipsis,
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                 }
@@ -86,7 +86,7 @@ fun MultiLineClickableField(
                     },
                     enabled = enabled,
                     singleLine = false,
-                    visualTransformation = VisualTransformation.Companion.None,
+                    visualTransformation = VisualTransformation.None,
                     interactionSource = interactionSource,
                     isError = isError,
                     label = label,
@@ -105,7 +105,7 @@ fun MultiLineClickableField(
         )
         // Clickable overlay to ensure click is always registered
         Box(
-            Modifier.Companion
+            Modifier
                 .matchParentSize()
                 .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                 .clickable(enabled = enabled) { onClick() }

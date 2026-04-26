@@ -1,4 +1,4 @@
-package dev.kluci_jak_buci.departuresboard.ui.screens.searchstation
+package dev.kluci_jak_buci.departuresboard.ui.components.searchstation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,9 +44,8 @@ import kotlin.collections.listOf
 
 @Composable
 fun SearchStationStandalone(
-    onStationSelected: (StationName) -> Unit,
+    onStationClick: (StationName) -> Unit,
     viewModel: SearchStationViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
 ) {
     val searchState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -54,7 +53,7 @@ fun SearchStationStandalone(
         searchText = searchState.searchText,
         onSearchTextChange = viewModel::onSearchTextChange,
         foundStations = searchState.foundStations,
-        onStationSelected = onStationSelected,
+        onStationClick = onStationClick,
     )
 }
 
@@ -63,7 +62,7 @@ fun SearchStation(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     foundStations: List<StationName>,
-    onStationSelected: (StationName) -> Unit,
+    onStationClick: (StationName) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -75,7 +74,7 @@ fun SearchStation(
         )
         FoundStations(
             stations = foundStations,
-            onStationSelected = onStationSelected,
+            onStationClick = onStationClick,
         )
     }
 }
@@ -109,7 +108,7 @@ fun SearchInput(
 @Composable
 fun FoundStations(
     stations: List<StationName>,
-    onStationSelected: (StationName) -> Unit,
+    onStationClick: (StationName) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -129,9 +128,9 @@ fun FoundStations(
                 items = stations,
                 key = { station -> station.value }
             ) { station ->
-                FoundStationItem(
+                StationItem(
                     station = station,
-                    onClick = { onStationSelected(station) }
+                    onClick = { onStationClick(station) }
                 )
             }
         }
@@ -139,7 +138,7 @@ fun FoundStations(
 }
 
 @Composable
-fun FoundStationItem(
+fun StationItem(
     station: StationName,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -148,7 +147,6 @@ fun FoundStationItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-//            .clip(RoundedCornerShape(20.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
@@ -198,6 +196,7 @@ fun FoundStationItem(
         }
     }
 }
+
 @Preview
 @Composable
 fun SearchStationPreview() {
@@ -209,7 +208,7 @@ fun SearchStationPreview() {
                 StationName("Háje"), StationName("Opatov"), StationName("Chodov"), StationName("Roztyly"), StationName("Kačerov"), StationName("Budějovická"), StationName("Pankrác"),
                 StationName("Pražského povstání"), StationName("Vyšehrad"), StationName("I.P. Pavlova"), StationName("Hlavní nádraží"), StationName("Florenc")
             ),
-            onStationSelected = { }
+            onStationClick = { }
         )
     }
 }

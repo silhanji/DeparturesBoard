@@ -4,21 +4,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
 @Serializable
-object ProfileEditor {
-}
+object ProfileEditor
 
 fun NavGraphBuilder.profileEditor(
     navController: NavController,
     onBackArrowClick: () -> Unit,
 ) {
-    composable<ProfileEditor> { backStackEntry ->
+    composable<ProfileEditor> {
         val viewModel = hiltViewModel<ProfileEditorViewModel>()
 
         val state by viewModel.uiState.collectAsState()
@@ -31,13 +29,13 @@ fun NavGraphBuilder.profileEditor(
 
         ProfileEditorScreen(
             state = state,
-            onNameChange = viewModel::onNameChange,
-            onTimeFilterChange = viewModel::onTimeFilterChange,
-            onAllDayChange = viewModel::onAllDayChange,
+            onNameChange = viewModel::setName,
+            onTimeFilterChange = viewModel::setTimeFilter,
+            onAllDayChange = viewModel::toggleAllDay,
             onBackArrowClick = onBackArrowClick,
             onSaveClick = viewModel::saveProfile,
-            onSelectStationClick = viewModel::onStationChanged,
-            onLineClick = viewModel::toggleLine
+            onStationClick = viewModel::selectStation,
+            onLineClick = viewModel::selectLine
         )
     }
 }

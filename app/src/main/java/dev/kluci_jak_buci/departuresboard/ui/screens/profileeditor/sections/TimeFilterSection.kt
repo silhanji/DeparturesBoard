@@ -53,11 +53,11 @@ fun TimeFilterSection(
     Section(
         name = stringResource(R.string.time_filter),
         actions = {
-            Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.all_day),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.Companion.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 8.dp)
                 )
                 Switch(
                     checked = allDay,
@@ -73,7 +73,7 @@ fun TimeFilterSection(
         ) {
             Column {
                 Row(
-                    modifier = Modifier.Companion.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TimeInputField(
@@ -82,7 +82,7 @@ fun TimeFilterSection(
                         onValueChange = {
                             onTimeFilterChange(timeFilter.copy(from = it))
                         },
-                        modifier = Modifier.Companion.weight(1f)
+                        modifier = Modifier.weight(1f)
                     )
 
                     TimeInputField(
@@ -91,7 +91,7 @@ fun TimeFilterSection(
                         onValueChange = {
                             onTimeFilterChange(timeFilter.copy(to = it))
                         },
-                        modifier = Modifier.Companion.weight(1f)
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }

@@ -29,19 +29,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
+import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.ui.components.BottomSheetHeader
 import dev.kluci_jak_buci.departuresboard.ui.components.MultiLineClickableField
 import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditorState
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStationStandalone
+import dev.kluci_jak_buci.departuresboard.ui.components.searchstation.SearchStationStandalone
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
 import kotlinx.coroutines.launch
+
+fun Station.getLines(): List<Line> {
+    return this.platforms.flatMap{ it.lines }
+}
 
 @Composable
 fun LinesSection(
     state: ProfileEditorState,
-    onSelectStationClick: (StationName) -> Unit,
+    onStationClick: (StationName) -> Unit,
     onLineClick: (Line) -> Unit = {},
 ) {
     var showLinesBottomSheet by remember { mutableStateOf(false) }
@@ -51,12 +56,12 @@ fun LinesSection(
         name = stringResource(R.string.lines)
     ) {
         StationOutlinedField(
-            stationName = state.selectedStation,
+            stationName = state.selectedStation?.name,
             onClick = { showStationBottomSheet = true }
         )
-
+        val stationLines = state.selectedStation?.getLines() ?: emptyList()
         LinesOutlinedField(
-            selectedLines = state.resolvedLines.filter { line ->
+            selectedLines = stationLines.filter { line ->
                 state.selectedLines.value.any { it.line == line.name }
             },
             onClick = { showLinesBottomSheet = true },
@@ -65,7 +70,7 @@ fun LinesSection(
     }
 
     SearchStationBottomSheet(
-        onSelectStationClick = onSelectStationClick,
+        onSelectStationClick = onStationClick,
         showStationBottomSheet = showStationBottomSheet,
         showStationBottomSheetChange = { showStationBottomSheet = it }
     )
@@ -95,7 +100,7 @@ private fun SearchStationBottomSheet(
         ) {
             BottomSheetHeader(
                 title = stringResource(R.string.choose_station),
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 onBackClick = {
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
@@ -105,7 +110,7 @@ private fun SearchStationBottomSheet(
                 }
             )
             SearchStationStandalone(
-                onStationSelected = { stationName ->
+                onStationClick = { stationName ->
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
                             showStationBottomSheetChange(false)
@@ -136,7 +141,7 @@ private fun SelectLinesBottomSheet(
         ) {
             BottomSheetHeader(
                 title = stringResource(R.string.select_line),
-                modifier = Modifier.Companion.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 onConfirmClick = {
                     scope.launch { selectLinesSheetState.hide() }.invokeOnCompletion {
                         if (!selectLinesSheetState.isVisible) {
@@ -145,11 +150,17 @@ private fun SelectLinesBottomSheet(
                     }
                 }
             )
+            val stationLines = state.selectedStation?.getLines() ?: emptyList()
+
+            val selectedLines = state.selectedStation?.platforms
+                ?.flatMap { platform -> platform.lines.map { line -> Pair( platform.id, line)} }
+                ?.filter{ (platformId, line) ->
+                    state.selectedLines.value.any { it.platform == platformId && it.line == line.name }
+                }
+                ?.map { (_, line) -> line } ?: emptyList()
             SelectLines(
-                lines = state.resolvedLines,
-                selectedLines = state.resolvedLines.filter { line ->
-                    state.selectedLines.value.any { it.line == line.name }
-                },
+                lines = stationLines,
+                selectedLines = selectedLines,
                 onLineClick = onLineClick,
                 modifier = Modifier.padding(bottom = 32.dp)
             )

@@ -7,9 +7,9 @@ import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.Profile
 import dev.kluci_jak_buci.departuresboard.domain.model.ProfileId
 import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
+import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
-import dev.kluci_jak_buci.departuresboard.domain.model.VehicleFilter
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.StationsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,14 +27,19 @@ data class InputField<T>(
     val isError: Boolean get() = errorMessage != null
 }
 
+val INIT_TIME_FILTER = TimeFilter(LocalTime(0, 0), LocalTime(23, 45))
+
 data class ProfileEditorState(
     val name: InputField<String> = InputField(""),
-    val timeFilter: InputField<TimeFilter> = InputField(TimeFilter(LocalTime(0, 0), LocalTime(23, 45))),
+    val timeFilter: InputField<TimeFilter> = InputField(INIT_TIME_FILTER),
     val allDay: Boolean = true,
-    val vehicleFilter: VehicleFilter? = null,
+    /**
+     * Represents a list of selected lines for selected station.
+     *
+     * When station changes, the list is cleared.
+     */
     val selectedLines: InputField<List<SelectedLine>> = InputField(emptyList()),
-    val selectedStation: StationName? = null,
-    val resolvedLines: List<Line> = emptyList(),
+    val selectedStation: Station? = null,
     val isSaving: Boolean = false,
     val isSaveSuccessful: Boolean = false
 ) {
@@ -53,53 +58,54 @@ class ProfileEditorViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProfileEditorState())
     val uiState = _uiState.asStateFlow()
 
-    fun onNameChange(newName: String) {
+    fun setName(newName: String) {
         _uiState.update { it.copy(name = InputField(newName)) }
     }
 
-    fun onTimeFilterChange(filter: TimeFilter) {
+    fun setTimeFilter(filter: TimeFilter) {
         _uiState.update { it.copy(timeFilter = InputField(filter)) }
     }
 
-    fun onAllDayChange() {
+    fun toggleAllDay() {
         _uiState.update { it.copy(allDay = !it.allDay) }
     }
 
-    fun toggleLine(line: Line) {
-        val stationName = _uiState.value.selectedStation ?: return
+    /**
+     * Selects a line for the given station to be added to profile draft.
+     * If already selected, the line is deselected instead.
+     */
+    fun selectLine(line: Line) {
+        val station = _uiState.value.selectedStation ?: return
 
         viewModelScope.launch {
-            val station = stationsRepository.get(stationName) ?: return@launch
-            val platform = station.platforms.find { p -> p.lines.any { it.name == line.name } } ?: return@launch
+            // get station platform for the line
+            val platform = station.platforms
+                .find { platform -> platform.lines.any { it == line } } ?: return@launch
 
             val newSelectedLine = SelectedLine(line.name, platform.id)
 
             _uiState.update { currentState ->
                 val currentList = currentState.selectedLines.value
-                val newList = if (currentList.any { it.line == line.name }) {
-                    currentList.filterNot { it.line == line.name }
+
+                // add to selected lines, if already selected, deselect
+                val lineAlreadySelected = currentList.any { it == line }
+                val newSelectedLines = if (lineAlreadySelected) {
+                    currentList.filterNot { it == line }
                 } else {
                     currentList + newSelectedLine
                 }
-                currentState.copy(selectedLines = InputField(newList))
+                currentState.copy(selectedLines = InputField(newSelectedLines))
             }
         }
     }
 
-    fun onStationChanged(stationName: StationName) {
+    fun selectStation(stationName: StationName) {
         viewModelScope.launch {
             val station = stationsRepository.get(stationName)
             _uiState.update { 
-                it.copy(
-                    selectedStation = stationName,
-                    resolvedLines = station?.platforms?.flatMap { p -> p.lines }?.distinctBy { l -> l.name } ?: emptyList()
-                )
+                it.copy(selectedStation = station)
             }
         }
-    }
-
-    fun onLinesChanged(lines: List<SelectedLine>) {
-        _uiState.update { it.copy(selectedLines = InputField(lines)) }
     }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalUuidApi::class)
@@ -114,7 +120,7 @@ class ProfileEditorViewModel @Inject constructor(
                 profilesRepository.create(profile)
                 _uiState.update { it.copy(isSaveSuccessful = true, isSaving = false) }
             } catch (e: Exception) {
-                // In a real app, handle error state here
+                // TODO: exception handling?
                 _uiState.update { it.copy(isSaving = false) }
             }
         }
@@ -127,7 +133,7 @@ class ProfileEditorViewModel @Inject constructor(
             name = name.value,
             selectedLines = selectedLines.value,
             timeFilter = if (allDay) null else timeFilter.value,
-            vehicleFilter = vehicleFilter
+            vehicleFilter = null
         )
     }
 }
