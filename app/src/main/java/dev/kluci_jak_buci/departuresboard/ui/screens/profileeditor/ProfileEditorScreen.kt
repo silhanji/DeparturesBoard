@@ -62,10 +62,8 @@ fun ProfileEditorScreen(
                 ) {
                     item {
                         DetailsSection(
-                            name = state.name.value,
+                            name = state.name,
                             onNameChange = onNameChange,
-                            isError = state.name.isError,
-                            errorMessage = state.name.errorMessage
                         )
                     }
 

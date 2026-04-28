@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
@@ -178,4 +179,19 @@ private fun TimePickerWithDialog(
 
 private fun LocalTime.formatHourMinute(): String {
     return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+}
+
+
+@Preview
+@Composable
+fun TimeFilterPreview() {
+    var timeFilter by remember { mutableStateOf(TimeFilter(LocalTime(12, 0), LocalTime(13, 0))) }
+    var allDay by remember { mutableStateOf(true) }
+
+    TimeFilterSection(
+        allDay = allDay,
+        timeFilter = timeFilter,
+        onAllDayChange = {allDay = !allDay},
+        onTimeFilterChange = { timeFilter = it }
+    )
 }

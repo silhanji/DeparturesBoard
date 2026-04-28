@@ -41,7 +41,8 @@ fun MultiLineClickableField(
     isError: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val textValue = lines.joinToString(" • ") { it }
+    // the text value is not shown, it just needs content when `lines` is not empty
+    val textValue = lines.joinToString("") { it }
 
     Box(modifier = modifier) {
         BasicTextField(

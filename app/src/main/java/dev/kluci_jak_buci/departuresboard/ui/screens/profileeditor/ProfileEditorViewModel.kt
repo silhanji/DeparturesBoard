@@ -1,5 +1,6 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +28,7 @@ data class InputField<T>(
     val isError: Boolean get() = errorMessage != null
 }
 
-val INIT_TIME_FILTER = TimeFilter(LocalTime(0, 0), LocalTime(23, 45))
+val INIT_TIME_FILTER = TimeFilter(LocalTime(0, 0), LocalTime(23, 59))
 
 data class ProfileEditorState(
     val name: InputField<String> = InputField(""),
@@ -104,7 +105,7 @@ class ProfileEditorViewModel @Inject constructor(
         viewModelScope.launch {
             val station = stationsRepository.get(stationName)
             _uiState.update { 
-                it.copy(selectedStation = station)
+                it.copy(selectedStation = station, selectedLines = InputField(emptyList()))
             }
         }
     }
@@ -121,7 +122,7 @@ class ProfileEditorViewModel @Inject constructor(
                 profilesRepository.create(profile)
                 _uiState.update { it.copy(isSaveSuccessful = true, isSaving = false) }
             } catch (e: Exception) {
-                // TODO: exception handling?
+                Log.e(ProfileEditorViewModel::class.simpleName, "Failed to create profile", e)
                 _uiState.update { it.copy(isSaving = false) }
             }
         }

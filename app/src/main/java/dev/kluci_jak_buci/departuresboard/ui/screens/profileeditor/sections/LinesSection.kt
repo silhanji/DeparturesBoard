@@ -26,26 +26,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
+import dev.kluci_jak_buci.departuresboard.domain.model.GeoPosition
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
+import dev.kluci_jak_buci.departuresboard.domain.model.LineName
+import dev.kluci_jak_buci.departuresboard.domain.model.LineType
+import dev.kluci_jak_buci.departuresboard.domain.model.Platform
+import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
 import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
 import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
-import dev.kluci_jak_buci.departuresboard.ui.components.BottomSheetHeader
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.BottomSheetHeader
 import dev.kluci_jak_buci.departuresboard.ui.components.MultiLineClickableField
 import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditorState
-import dev.kluci_jak_buci.departuresboard.ui.components.searchstation.SearchStationStandalone
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStationStandalone
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.InputField
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
 import kotlinx.coroutines.launch
 
-/**
- * Gets all lines irrespective of platform.
- */
-private fun Station.getLines(): List<Line> {
-    return this.platforms.flatMap{ it.lines }
-}
 
 /**
  * Maps the selected lines to their corresponding Line object for if the station has the line.
@@ -232,5 +233,47 @@ private fun LinesOutlinedField(
                 contentDescription = null
             )
         }
+    )
+}
+
+
+@Preview
+@Composable
+fun LinesSectionPreview() {
+    var state by remember {
+        mutableStateOf(ProfileEditorState(
+            selectedLines = InputField(listOf(
+                SelectedLine(LineName("12"), PlatformId("U360Z1P")),
+                SelectedLine(LineName("A"), PlatformId("U360Z1P"))
+            )),
+            selectedStation = Station(
+                name = StationName("Malostranská"),
+                platforms = listOf(
+                    Platform(
+                        id = PlatformId("U360Z1P"),
+                        name = "Malostranská - směr centrum",
+                        lines = listOf(
+                            Line(
+                                name = LineName("12"),
+                                type = LineType.TRAM,
+                                directions = listOf("Sídliště Barrandov")
+                            ),
+                            Line(
+                                name = LineName("A"),
+                                type = LineType.METRO,
+                                directions = listOf("Depo Hostivař")
+                            )
+                        ),
+                        position = GeoPosition(50.0910, 14.4112)
+                    ),
+                )
+            )
+        ))
+    }
+
+    LinesSection(
+        state = state,
+        onStationClick = {},
+        onLineClick = {}
     )
 }

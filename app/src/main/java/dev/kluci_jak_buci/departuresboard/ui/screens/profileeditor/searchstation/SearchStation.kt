@@ -1,4 +1,4 @@
-package dev.kluci_jak_buci.departuresboard.ui.components.searchstation
+package dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
