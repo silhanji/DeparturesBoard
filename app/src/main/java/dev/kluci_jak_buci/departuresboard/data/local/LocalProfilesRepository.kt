@@ -1,106 +1,124 @@
 package dev.kluci_jak_buci.departuresboard.data.local
 
+import dev.kluci_jak_buci.departuresboard.data.local.db.DbProfile
+import dev.kluci_jak_buci.departuresboard.data.local.db.DbProfileWithLines
+import dev.kluci_jak_buci.departuresboard.data.local.db.DbSelectedLine
+import dev.kluci_jak_buci.departuresboard.data.local.db.ProfileDao
 import dev.kluci_jak_buci.departuresboard.domain.model.LineName
 import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
 import dev.kluci_jak_buci.departuresboard.domain.model.Profile
 import dev.kluci_jak_buci.departuresboard.domain.model.ProfileId
 import dev.kluci_jak_buci.departuresboard.domain.model.SelectedLine
+import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
+import dev.kluci_jak_buci.departuresboard.domain.model.VehicleFilter
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-class LocalProfilesRepository @Inject constructor() : ProfilesRepository {
-
-    private val _profiles = MutableStateFlow<List<Profile>>(emptyList())
-
-    init {
-        // Some predefined profiles until profile creation is implemented
-        _profiles.update {
-            listOf(
-                Profile(
-                    id = ProfileId.generate(),
-                    name = "Matfyz",
-                    selectedLines = listOf(
-                        SelectedLine(
-                            line = LineName("22"),
-                            platform = PlatformId("U361Z1P")
-                        ),
-                        SelectedLine(
-                            line = LineName("15"),
-                            platform = PlatformId("U361Z1P")
-                        ),
-                    ),
-                    timeFilter = null,
-                    vehicleFilter = null,
-                ),
-                Profile(
-                    id = ProfileId.generate(),
-                    name = "Budějovická (práce)",
-                    selectedLines = listOf(
-                        SelectedLine(
-                            line = LineName("124"),
-                            platform = PlatformId("U50Z6P")
-                        ),
-                        SelectedLine(
-                            line = LineName("134"),
-                            platform = PlatformId("U50Z6P")
-                        ),
-                    ),
-                    timeFilter = null,
-                    vehicleFilter = null,
-                ),
-                Profile(
-                    id = ProfileId.generate(),
-                    name = "Vyšehrad",
-                    selectedLines = listOf(
-                        SelectedLine(
-                            line = LineName("C"),
-                            platform = PlatformId("U527Z101P")
-                        ),
-                    ),
-                    timeFilter = null,
-                    vehicleFilter = null,
-                )
-            )
-        }
-    }
+class LocalProfilesRepository @Inject constructor(
+    private val dao: ProfileDao
+) : ProfilesRepository {
 
     override fun get(id: ProfileId): Flow<Profile?> {
-        return _profiles
-            .map { list ->
-                list.find { it.id == id }
+        return dao.get(id.value)
+            .map { dbProfile ->
+                if(dbProfile != null)
+                    toProfile(dbProfile)
+                else
+                    null
             }
             .distinctUntilChanged()
     }
 
     override fun getAll(): Flow<List<Profile>> {
-        return _profiles.asStateFlow()
+        return dao.getAll()
+            .map { profiles ->
+                profiles.map { toProfile(it) }
+            }
     }
 
     override suspend fun create(profile: Profile) {
-        _profiles.update { currentProfiles ->
-            val newList = currentProfiles + profile
-            newList
-        }
+        val (dbProfile, dbLines) = toDbProfile(profile)
+        dao.insert(dbProfile, dbLines)
     }
 
     override suspend fun update(profile: Profile) {
-        _profiles.update { currentProfiles ->
-            val newList = currentProfiles.filter { it.id != profile.id } + profile
-            newList
-        }
+        val (dbProfile, dbLines) = toDbProfile(profile)
+        dao.deleteSelectedLines(dbProfile.id)
+        dao.update(dbProfile)
+        dao.insert(dbLines)
     }
 
     override suspend fun delete(id: ProfileId) {
-        _profiles.update { currentProfiles ->
-            val newList = currentProfiles.filter { it.id != id }
-            newList
+        dao.delete(id.value)
+    }
+
+    private fun toProfile(dbProfile: DbProfileWithLines): Profile {
+        return Profile(
+            id = ProfileId(dbProfile.profile.id),
+            name = dbProfile.profile.name,
+            selectedLines = dbProfile.selectedLines.map{ toSelectedLine(it) },
+            timeFilter = toTimeFilter(dbProfile.profile),
+            vehicleFilter = toVehicleFilter(dbProfile.profile),
+        )
+    }
+
+    private fun toSelectedLine(dbSelectedLine: DbSelectedLine): SelectedLine {
+        return SelectedLine(
+            line = LineName(dbSelectedLine.line),
+            platform = PlatformId(dbSelectedLine.platform),
+        )
+    }
+
+    private fun toTimeFilter(dbProfile: DbProfile): TimeFilter? {
+        return if(
+            dbProfile.timeFilterFrom != null &&
+            dbProfile.timeFilterTo != null
+        ) {
+            TimeFilter(
+                from = dbProfile.timeFilterFrom,
+                to = dbProfile.timeFilterTo,
+            )
+        } else {
+            null
         }
+    }
+
+    private fun toVehicleFilter(dbProfile: DbProfile): VehicleFilter? {
+        return if(
+            dbProfile.vehicleFilterAirConditioned != null ||
+            dbProfile.vehicleFilterWheelChairAccessible != null
+        ) {
+            VehicleFilter(
+                wheelChairAccessible = dbProfile.vehicleFilterWheelChairAccessible,
+                airConditioned = dbProfile.vehicleFilterAirConditioned,
+            )
+        } else {
+            null
+        }
+    }
+
+    private fun toDbProfile(profile: Profile): Pair<DbProfile, List<DbSelectedLine>> {
+        val dbProfile = DbProfile(
+            id = profile.id.value,
+            name = profile.name,
+            timeFilterFrom = profile.timeFilter?.from,
+            timeFilterTo = profile.timeFilter?.to,
+            vehicleFilterWheelChairAccessible = profile.vehicleFilter?.wheelChairAccessible,
+            vehicleFilterAirConditioned = profile.vehicleFilter?.airConditioned,
+        )
+        val dbLines = profile.selectedLines
+            .map {
+                DbSelectedLine(
+                    profileId = profile.id.value,
+                    line = it.line.value,
+                    platform = it.platform.value,
+                )
+            }
+
+        return Pair(dbProfile, dbLines)
     }
 
 }
