@@ -12,11 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,13 +33,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.Line
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
-import dev.kluci_jak_buci.departuresboard.ui.components.ScreenScaffold
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.sections.DetailsSection
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.sections.LinesSection
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.sections.TimeFilterSection
@@ -44,71 +52,104 @@ fun ProfileEditorScreen(
     onTimeFilterChange: (TimeFilter) -> Unit,
     onAllDayChange: () -> Unit,
     onBackArrowClick: () -> Unit,
+    onScreenPush: (EditorScreen) -> Unit,
+    onScreenPop: () -> Unit,
     modifier: Modifier = Modifier,
     onSaveClick: () -> Unit = {},
     onStationClick: (StationName) -> Unit,
     onLineClick: (Line) -> Unit = {},
 ) {
-    ScreenScaffold(
-        title = stringResource(R.string.create_profile),
-        onBackArrowClick = onBackArrowClick,
-        modifier = modifier,
-        content = { modifier ->
-            Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        DetailsSection(
-                            name = state.name,
-                            onNameChange = onNameChange,
-                        )
-                    }
-
-                    item {
-                        LinesSection(
-                            state = state,
-                            onStationClick = onStationClick,
-                            onLineClick = onLineClick
-                        )
-                    }
-
-                    item {
-                        TimeFilterSection(
-                            allDay = state.allDay,
-                            timeFilter = state.timeFilter.value,
-                            onAllDayChange = onAllDayChange,
-                            onTimeFilterChange = onTimeFilterChange
-                        )
-                    }
+    Scaffold(
+        topBar =  { EditorAppBar(onBackArrowClick) },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.fillMaxSize(),
+    ) { innerPadding ->
+        Box(modifier = modifier.padding(innerPadding).fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    DetailsSection(
+                        name = state.name,
+                        onNameChange = onNameChange,
+                    )
                 }
 
-                Surface(
+                item {
+                    LinesSection(
+                        state = state,
+                        onStationClick = onStationClick,
+                        onLineClick = onLineClick,
+                        onScreenPush = onScreenPush,
+                        onScreenPop = onScreenPop
+                    )
+                }
+
+                item {
+                    TimeFilterSection(
+                        allDay = state.allDay,
+                        timeFilter = state.timeFilter.value,
+                        onAllDayChange = onAllDayChange,
+                        onTimeFilterChange = onTimeFilterChange
+                    )
+                }
+            }
+
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(),
+                tonalElevation = 8.dp,
+                shadowElevation = 8.dp
+            ) {
+                Button(
+                    onClick = onSaveClick,
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
-                    tonalElevation = 8.dp,
-                    shadowElevation = 8.dp
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = state.isFormValid && !state.isSaving
                 ) {
-                    Button(
-                        onClick = onSaveClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        enabled = state.isFormValid && !state.isSaving
-                    ) {
-                        Text(
-                            text = stringResource(R.string.save_profile),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.save_profile),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EditorAppBar(
+    onBackArrowClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    TopAppBar(
+        navigationIcon = {
+            IconButton(
+                onClick = { onBackArrowClick() }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+        },
+        title = {
+            Text(
+                stringResource(R.string.create_profile),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        scrollBehavior = scrollBehavior,
+        modifier = modifier,
     )
 }
 
@@ -124,7 +165,9 @@ fun ProfileEditorScreenPreview() {
             onAllDayChange = { state = state.copy(allDay = !state.allDay) },
             onTimeFilterChange = { state = state.copy(timeFilter = state.timeFilter.copy(value = it)) },
             onStationClick = {},
-            onBackArrowClick = {}
+            onBackArrowClick = {},
+            onScreenPush = { screen -> state = state.copy(openScreen = screen) },
+            onScreenPop = { state = state.copy(openScreen = EditorScreen.General) },
         )
     }
 }

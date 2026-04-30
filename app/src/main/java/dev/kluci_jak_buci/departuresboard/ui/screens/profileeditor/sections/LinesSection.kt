@@ -44,9 +44,9 @@ import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditorState
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStationStandalone
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.InputField
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.EditorScreen
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
 import kotlinx.coroutines.launch
-
 
 /**
  * Maps the selected lines to their corresponding Line object for if the station has the line.
@@ -64,53 +64,52 @@ private fun Station.getSelectedLines(selectedLines: List<SelectedLine>): List<Li
 fun LinesSection(
     state: ProfileEditorState,
     onStationClick: (StationName) -> Unit,
+    onScreenPush: (EditorScreen) -> Unit,
+    onScreenPop: () -> Unit,
     onLineClick: (Line) -> Unit = {},
 ) {
-    var showLinesBottomSheet by remember { mutableStateOf(false) }
-    var showStationBottomSheet by remember { mutableStateOf(false) }
-
     Section(
         name = stringResource(R.string.lines)
     ) {
         StationOutlinedField(
             stationName = state.selectedStation?.name,
-            onClick = { showStationBottomSheet = true }
+            onClick = { onScreenPush(EditorScreen.SearchStation) }
         )
         val selectedLines = state.selectedStation
             ?.getSelectedLines(state.selectedLines.value) ?: emptyList()
         LinesOutlinedField(
             selectedLines = selectedLines,
-            onClick = { showLinesBottomSheet = true },
+            onClick = { onScreenPush(EditorScreen.SelectLines) },
             enabled = state.selectedStation != null
         )
     }
 
     SearchStationBottomSheet(
         onSelectStationClick = onStationClick,
-        showStationBottomSheet = showStationBottomSheet,
-        showStationBottomSheetChange = { showStationBottomSheet = it }
+        showSheet = state.openScreen == EditorScreen.SearchStation,
+        onSheetClose = onScreenPop
     )
 
     SelectLinesBottomSheet(
         state = state,
         onLineClick = onLineClick,
-        showLinesBottomSheet = showLinesBottomSheet,
-        onShowLinesBottomSheetChange = { showLinesBottomSheet = it }
+        showSheet = state.openScreen == EditorScreen.SelectLines,
+        onSheetClose = onScreenPop
     )
 }
 
 @Composable
 private fun SearchStationBottomSheet(
     onSelectStationClick: (StationName) -> Unit,
-    showStationBottomSheet: Boolean,
-    showStationBottomSheetChange: (Boolean) -> Unit
+    showSheet: Boolean,
+    onSheetClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val searchStationSheetState = rememberModalBottomSheetState()
 
-    if (showStationBottomSheet) {
+    if (showSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showStationBottomSheetChange(false) },
+            onDismissRequest = { onSheetClose() },
             sheetState = searchStationSheetState,
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ) {
@@ -120,7 +119,7 @@ private fun SearchStationBottomSheet(
                 onBackClick = {
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
-                            showStationBottomSheetChange(false)
+                            onSheetClose()
                         }
                     }
                 }
@@ -129,7 +128,7 @@ private fun SearchStationBottomSheet(
                 onStationClick = { stationName ->
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
-                            showStationBottomSheetChange(false)
+                            onSheetClose()
                             onSelectStationClick(stationName)
                         }
                     }
@@ -143,15 +142,15 @@ private fun SearchStationBottomSheet(
 private fun SelectLinesBottomSheet(
     state: ProfileEditorState,
     onLineClick: (Line) -> Unit = {},
-    showLinesBottomSheet: Boolean,
-    onShowLinesBottomSheetChange: (Boolean) -> Unit
+    showSheet: Boolean,
+    onSheetClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val selectLinesSheetState = rememberModalBottomSheetState()
 
-    if (showLinesBottomSheet) {
+    if (showSheet) {
         ModalBottomSheet(
-            onDismissRequest = { onShowLinesBottomSheetChange(false) },
+            onDismissRequest = { onSheetClose() },
             sheetState = selectLinesSheetState,
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ) {
@@ -161,7 +160,7 @@ private fun SelectLinesBottomSheet(
                 onConfirmClick = {
                     scope.launch { selectLinesSheetState.hide() }.invokeOnCompletion {
                         if (!selectLinesSheetState.isVisible) {
-                            onShowLinesBottomSheetChange(false)
+                            onSheetClose()
                         }
                     }
                 }
@@ -236,7 +235,6 @@ private fun LinesOutlinedField(
     )
 }
 
-
 @Preview
 @Composable
 fun LinesSectionPreview() {
@@ -274,6 +272,8 @@ fun LinesSectionPreview() {
     LinesSection(
         state = state,
         onStationClick = {},
-        onLineClick = {}
+        onLineClick = {},
+        onScreenPush = { screen -> state = state.copy(openScreen = screen) },
+        onScreenPop = { state = state.copy(openScreen = EditorScreen.General) },
     )
 }

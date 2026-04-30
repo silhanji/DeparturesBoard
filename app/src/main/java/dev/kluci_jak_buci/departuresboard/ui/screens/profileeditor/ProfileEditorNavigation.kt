@@ -35,7 +35,9 @@ fun NavGraphBuilder.profileEditor(
             onBackArrowClick = onBackArrowClick,
             onSaveClick = viewModel::saveProfile,
             onStationClick = viewModel::selectStation,
-            onLineClick = viewModel::selectLine
+            onLineClick = viewModel::selectLine,
+            onScreenPop = viewModel::popScreen,
+            onScreenPush = viewModel::pushScreen
         )
     }
 }

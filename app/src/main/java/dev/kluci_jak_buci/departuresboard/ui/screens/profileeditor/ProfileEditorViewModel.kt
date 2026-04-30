@@ -30,6 +30,12 @@ data class InputField<T>(
 
 val INIT_TIME_FILTER = TimeFilter(LocalTime(0, 0), LocalTime(23, 59))
 
+enum class EditorScreen() {
+    General,
+    SelectLines,
+    SearchStation
+}
+
 data class ProfileEditorState(
     val name: InputField<String> = InputField(""),
     val timeFilter: InputField<TimeFilter> = InputField(INIT_TIME_FILTER),
@@ -41,6 +47,7 @@ data class ProfileEditorState(
      */
     val selectedLines: InputField<List<SelectedLine>> = InputField(emptyList()),
     val selectedStation: Station? = null,
+    val openScreen: EditorScreen = EditorScreen.General,
     val isSaving: Boolean = false,
     val isSaveSuccessful: Boolean = false
 ) {
@@ -98,6 +105,31 @@ class ProfileEditorViewModel @Inject constructor(
                 }
                 currentState.copy(selectedLines = InputField(newSelectedLines))
             }
+        }
+    }
+
+    /**
+     * Push new screen on top of existing screens.
+     * Cannot be used to go back to General screen (or any other previous screen).
+     */
+    fun pushScreen(screen: EditorScreen) {
+        if (screen == EditorScreen.General) {
+            throw IllegalArgumentException("Cannot open screen General, " +
+                    "General screen can be opened only by closing current screen")
+        }
+
+        _uiState.update {
+            it.copy(openScreen = screen)
+        }
+    }
+
+    /**
+     * Pop current open screen, currently only single open screen is supported.
+     * so the state returns to general screen.
+     */
+    fun popScreen() {
+        _uiState.update {
+            it.copy(openScreen = EditorScreen.General)
         }
     }
 
