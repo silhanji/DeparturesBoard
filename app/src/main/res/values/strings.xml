@@ -27,4 +27,5 @@
     <string name="add">Add</string>
     <string name="edit">Edit</string>
     <string name="no_lines_selected_hint">All lines from this station will be shown. Tap \'Add\' to filter specific lines.</string>
+    <string name="clear_icon">clear icon</string>
 </resources>

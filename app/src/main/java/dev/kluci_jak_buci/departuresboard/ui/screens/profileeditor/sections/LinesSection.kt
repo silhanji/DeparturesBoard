@@ -75,7 +75,7 @@ fun LinesSection(
     ) {
         StationOutlinedField(
             stationName = state.selectedStation?.name,
-            onClick = { onScreenPush(EditorScreen.SearchStation(SearchStationState())) }
+            onClick = { onScreenPush(EditorScreen.SearchStation) }
         )
         val selectedLines = state.selectedStation
             ?.getSelectedLines(state.selectedLines.value) ?: emptyList()
@@ -88,8 +88,8 @@ fun LinesSection(
 
     SearchStationBottomSheet(
         onSelectStationClick = onStationClick,
-        searchStationState = state.openScreen.let { it as? EditorScreen.SearchStation }?.state ?: SearchStationState(),
-        showSheet = state.openScreen is EditorScreen.SearchStation,
+        searchStationState = state.searchStation,
+        showSheet = state.openScreen == EditorScreen.SearchStation,
         onSearchTextChange = onStationSearchTextChange,
         onSheetClose = onScreenPop
     )
@@ -97,7 +97,7 @@ fun LinesSection(
     SelectLinesBottomSheet(
         state = state,
         onLineClick = onLineClick,
-        showSheet = state.openScreen is EditorScreen.SelectLines,
+        showSheet = state.openScreen == EditorScreen.SelectLines,
         onSheetClose = onScreenPop
     )
 }
@@ -131,6 +131,7 @@ private fun SearchStationBottomSheet(
                 }
             )
             SearchStation(
+                state = searchStationState,
                 onStationClick = { stationName ->
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
@@ -139,9 +140,7 @@ private fun SearchStationBottomSheet(
                         }
                     }
                 },
-                searchText = searchStationState.searchText,
                 onSearchTextChange = onSearchTextChange,
-                foundStations = searchStationState.foundStations,
             )
         }
     }

@@ -17,12 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,14 +37,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.kluci_jak_buci.departuresboard.R
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
+import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import kotlin.collections.listOf
 
 @Composable
 fun SearchStation(
-    searchText: String,
+    state: SearchStationState,
     onSearchTextChange: (String) -> Unit,
-    foundStations: List<StationName>,
     onStationClick: (StationName) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -51,11 +52,11 @@ fun SearchStation(
         modifier = modifier,
     ) {
         SearchInput(
-            search = searchText,
+            search = state.searchText,
             onSearchChange = onSearchTextChange
         )
         FoundStations(
-            stations = foundStations,
+            stations = state.foundStations,
             onStationClick = onStationClick,
         )
     }
@@ -67,7 +68,7 @@ fun SearchInput(
     onSearchChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(
+    Field(
         value = search,
         onValueChange = { newValue -> onSearchChange(newValue) },
         leadingIcon = {
@@ -75,6 +76,18 @@ fun SearchInput(
                 imageVector = Icons.Default.Search,
                 contentDescription = stringResource(R.string.search_icon),
             )
+        },
+        trailingIcon = {
+            if (search.isNotEmpty()) {
+                IconButton(
+                    onClick = { onSearchChange("") }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = stringResource(R.string.clear_icon),
+                    )
+                }
+            }
         },
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search,
@@ -184,12 +197,14 @@ fun StationItem(
 fun SearchStationPreview() {
     DeparturesBoardTheme {
         SearchStation(
-            searchText = "Cho",
-            onSearchTextChange = { },
-            foundStations = listOf(
-                StationName("Háje"), StationName("Opatov"), StationName("Chodov"), StationName("Roztyly"), StationName("Kačerov"), StationName("Budějovická"), StationName("Pankrác"),
-                StationName("Pražského povstání"), StationName("Vyšehrad"), StationName("I.P. Pavlova"), StationName("Hlavní nádraží"), StationName("Florenc")
+            state = SearchStationState(
+                searchText = "Cho",
+                foundStations = listOf(
+                    StationName("Háje"), StationName("Opatov"), StationName("Chodov"), StationName("Roztyly"), StationName("Kačerov"), StationName("Budějovická"), StationName("Pankrác"),
+                    StationName("Pražského povstání"), StationName("Vyšehrad"), StationName("I.P. Pavlova"), StationName("Hlavní nádraží"), StationName("Florenc")
+                ),
             ),
+            onSearchTextChange = { },
             onStationClick = { }
         )
     }
