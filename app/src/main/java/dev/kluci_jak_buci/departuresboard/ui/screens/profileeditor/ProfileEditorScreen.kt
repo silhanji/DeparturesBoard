@@ -57,6 +57,7 @@ fun ProfileEditorScreen(
     modifier: Modifier = Modifier,
     onSaveClick: () -> Unit = {},
     onStationClick: (StationName) -> Unit,
+    onSearchStationTextChange: (String) -> Unit = {},
     onLineClick: (Line) -> Unit = {},
 ) {
     Scaffold(
@@ -83,7 +84,8 @@ fun ProfileEditorScreen(
                         onStationClick = onStationClick,
                         onLineClick = onLineClick,
                         onScreenPush = onScreenPush,
-                        onScreenPop = onScreenPop
+                        onScreenPop = onScreenPop,
+                        onStationSearchTextChange = onSearchStationTextChange
                     )
                 }
 
@@ -168,6 +170,7 @@ fun ProfileEditorScreenPreview() {
             onBackArrowClick = {},
             onScreenPush = { screen -> state = state.copy(openScreen = screen) },
             onScreenPop = { state = state.copy(openScreen = EditorScreen.General) },
+            onSearchStationTextChange = {}
         )
     }
 }

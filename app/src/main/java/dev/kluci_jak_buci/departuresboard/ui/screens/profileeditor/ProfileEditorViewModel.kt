@@ -13,8 +13,14 @@ import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.model.TimeFilter
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.StationsRepository
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStationState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
@@ -30,10 +36,10 @@ data class InputField<T>(
 
 val INIT_TIME_FILTER = TimeFilter(LocalTime(0, 0), LocalTime(23, 59))
 
-enum class EditorScreen() {
-    General,
-    SelectLines,
-    SearchStation
+sealed class EditorScreen {
+    data object General : EditorScreen()
+    data object SelectLines : EditorScreen()
+    data class SearchStation(val state: SearchStationState) : EditorScreen()
 }
 
 data class ProfileEditorState(
@@ -57,6 +63,7 @@ data class ProfileEditorState(
         !timeFilter.isError &&
         selectedLines.value.isNotEmpty()
 }
+const val SEARCH_DEBOUNCE: Long = 300
 
 @HiltViewModel
 class ProfileEditorViewModel @Inject constructor(
@@ -66,6 +73,29 @@ class ProfileEditorViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ProfileEditorState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _uiState
+                .filter { it.openScreen is EditorScreen.SearchStation }
+                .map{ it.openScreen as EditorScreen.SearchStation }
+                .map { it.state.searchText }
+                .debounce(SEARCH_DEBOUNCE)
+                .distinctUntilChanged()
+                .collectLatest { searchText ->
+                    val foundStations = stationsRepository.search(searchText)
+                    updateSearchStationState {
+                        it.copy(foundStations = foundStations, searchText =  searchText)
+                    }
+                }
+        }
+    }
+
+    fun searchForStation(text: String) {
+        updateSearchStationState {
+            it.copy(searchText = text)
+        }
+    }
 
     fun setName(newName: String) {
         _uiState.update { it.copy(name = InputField(newName)) }
@@ -169,5 +199,26 @@ class ProfileEditorViewModel @Inject constructor(
             timeFilter = if (allDay) null else timeFilter.value,
             vehicleFilter = null
         )
+    }
+
+    private fun updateSearchStationState(
+        transform: (SearchStationState) -> SearchStationState
+    ) {
+        _uiState.update { state ->
+            val screen = state.openScreen
+            if (screen is EditorScreen.SearchStation) {
+                state.copy(
+                    openScreen = screen.copy(
+                        state = transform(screen.state)
+                    )
+                )
+            } else {
+                Log.e(
+                    ProfileEditorViewModel::class.simpleName,
+                    "Updating station when not in search screen, open screen $screen"
+                )
+                state
+            }
+        }
     }
 }

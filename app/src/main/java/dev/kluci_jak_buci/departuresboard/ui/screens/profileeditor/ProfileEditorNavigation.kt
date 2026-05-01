@@ -37,7 +37,8 @@ fun NavGraphBuilder.profileEditor(
             onStationClick = viewModel::selectStation,
             onLineClick = viewModel::selectLine,
             onScreenPop = viewModel::popScreen,
-            onScreenPush = viewModel::pushScreen
+            onScreenPush = viewModel::pushScreen,
+            onSearchStationTextChange = viewModel::searchForStation
         )
     }
 }

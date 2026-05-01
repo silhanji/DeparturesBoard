@@ -42,10 +42,11 @@ import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.BottomSheetHe
 import dev.kluci_jak_buci.departuresboard.ui.components.MultiLineClickableField
 import dev.kluci_jak_buci.departuresboard.ui.components.Field
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditorState
-import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStationStandalone
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.InputField
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.EditorScreen
 import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.SelectLines
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.searchstation.SearchStationState
 import kotlinx.coroutines.launch
 
 /**
@@ -63,6 +64,7 @@ private fun Station.getSelectedLines(selectedLines: List<SelectedLine>): List<Li
 @Composable
 fun LinesSection(
     state: ProfileEditorState,
+    onStationSearchTextChange: (String) -> Unit,
     onStationClick: (StationName) -> Unit,
     onScreenPush: (EditorScreen) -> Unit,
     onScreenPop: () -> Unit,
@@ -73,7 +75,7 @@ fun LinesSection(
     ) {
         StationOutlinedField(
             stationName = state.selectedStation?.name,
-            onClick = { onScreenPush(EditorScreen.SearchStation) }
+            onClick = { onScreenPush(EditorScreen.SearchStation(SearchStationState())) }
         )
         val selectedLines = state.selectedStation
             ?.getSelectedLines(state.selectedLines.value) ?: emptyList()
@@ -86,14 +88,16 @@ fun LinesSection(
 
     SearchStationBottomSheet(
         onSelectStationClick = onStationClick,
-        showSheet = state.openScreen == EditorScreen.SearchStation,
+        searchStationState = state.openScreen.let { it as? EditorScreen.SearchStation }?.state ?: SearchStationState(),
+        showSheet = state.openScreen is EditorScreen.SearchStation,
+        onSearchTextChange = onStationSearchTextChange,
         onSheetClose = onScreenPop
     )
 
     SelectLinesBottomSheet(
         state = state,
         onLineClick = onLineClick,
-        showSheet = state.openScreen == EditorScreen.SelectLines,
+        showSheet = state.openScreen is EditorScreen.SelectLines,
         onSheetClose = onScreenPop
     )
 }
@@ -101,6 +105,8 @@ fun LinesSection(
 @Composable
 private fun SearchStationBottomSheet(
     onSelectStationClick: (StationName) -> Unit,
+    searchStationState: SearchStationState,
+    onSearchTextChange: (String) -> Unit,
     showSheet: Boolean,
     onSheetClose: () -> Unit
 ) {
@@ -124,7 +130,7 @@ private fun SearchStationBottomSheet(
                     }
                 }
             )
-            SearchStationStandalone(
+            SearchStation(
                 onStationClick = { stationName ->
                     scope.launch { searchStationSheetState.hide() }.invokeOnCompletion {
                         if (!searchStationSheetState.isVisible) {
@@ -132,7 +138,10 @@ private fun SearchStationBottomSheet(
                             onSelectStationClick(stationName)
                         }
                     }
-                }
+                },
+                searchText = searchStationState.searchText,
+                onSearchTextChange = onSearchTextChange,
+                foundStations = searchStationState.foundStations,
             )
         }
     }
@@ -275,5 +284,6 @@ fun LinesSectionPreview() {
         onLineClick = {},
         onScreenPush = { screen -> state = state.copy(openScreen = screen) },
         onScreenPop = { state = state.copy(openScreen = EditorScreen.General) },
+        onStationSearchTextChange = {},
     )
 }
