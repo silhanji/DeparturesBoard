@@ -80,6 +80,9 @@ class ProfileEditorViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
+        /**
+         * provides debounced search for searching for stations when search text is changed
+         */
         viewModelScope.launch {
             _uiState
                 .map { it.searchStation.searchText }
