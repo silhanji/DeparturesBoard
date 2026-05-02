@@ -1,6 +1,5 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +21,11 @@ import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.time.Clock
 import kotlin.time.Duration
+
+/**
+ * Number of milliseconds between periodic refresh of departures
+ */
+private const val DEPARTURES_REFRESH_INTERVAL = 15_000L
 
 data class DashboardProfile(
     val id: ProfileId,
@@ -50,12 +54,18 @@ class DashboardViewModel @Inject constructor(
     departuresRepository: DeparturesRepository,
 ) : ViewModel() {
 
+    // Flow which does not produce any data, but serves as a trigger
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply {
         tryEmit(Unit)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<DashboardUiState> = profilesRepository.getAll()
+        // Combining the two flows into one ensures that ui state is recomputed
+        // either when profiles change in repository or when refresh trigger produces new data
+        // (it gets triggered).
+        //
+        // This is achieved by using map function twice, on both flows.
         .flatMapLatest { profiles ->
             _refreshTrigger.map { profiles }
         }
@@ -63,8 +73,10 @@ class DashboardViewModel @Inject constructor(
             val now = Clock.System.now()
             val timeZone = TimeZone.currentSystemDefault()
 
+
             val allDepartures = departuresRepository.get(profiles)
 
+            // Convert profiles and departures into models consumed by UI
             val dashboardProfiles = profiles.map { profile ->
                 val departures = allDepartures[profile].orEmpty()
                     .map { departure ->
@@ -92,9 +104,11 @@ class DashboardViewModel @Inject constructor(
                 savedProfiles = dashboardProfiles.drop(currentConst),
             )
         }
+        // Do not wait until someone subscribes to the flow, instead
+        // compute it always on background
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(),
             initialValue = DashboardUiState(isLoading = true)
         )
 
@@ -102,11 +116,14 @@ class DashboardViewModel @Inject constructor(
         periodicallyRefreshDepartures()
     }
 
+    /**
+     * Launches a coroutine that periodically triggers _refreshTrigger and thus refreshes
+     * the UI State
+     */
     private fun periodicallyRefreshDepartures() {
         viewModelScope.launch {
             while(true) {
-                // Refresh every 15s
-                delay(15_000L)
+                delay(DEPARTURES_REFRESH_INTERVAL)
                 _refreshTrigger.emit(Unit)
             }
         }
