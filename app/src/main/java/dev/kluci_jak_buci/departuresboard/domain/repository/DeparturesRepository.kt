@@ -18,4 +18,15 @@ interface DeparturesRepository {
         profile: Profile,
         limit: Int = 5,
     ): List<Departure>
+
+    /**
+     * Fetches closest departures for each profile
+     *
+     * @param profiles Profiles for which departures will be fetched
+     * @param limit Maximum number of departures to fetch for each profile
+     */
+    suspend fun get(
+        profiles: List<Profile>,
+        limit: Int = 5,
+    ): Map<Profile, List<Departure>>
 }

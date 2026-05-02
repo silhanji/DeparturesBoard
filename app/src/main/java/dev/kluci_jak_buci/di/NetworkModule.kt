@@ -8,7 +8,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.kluci_jak_buci.departuresboard.BuildConfig.GOLEMIO_API_KEY
 import dev.kluci_jak_buci.departuresboard.data.remote.GolemioApiService
-import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -31,26 +30,6 @@ object NetworkModule {
                     .header("X-Access-Token", GOLEMIO_API_KEY)
                     .build()
                 chain.proceed(modifiedRequest)
-            }
-            // Convert Station ID to JSON structure
-            .addInterceptor { chain ->
-                val request = chain.request()
-
-                val stopIds = request.url.queryParameterValues("json_stopId")
-                if(stopIds.isNotEmpty()) {
-                    val stopIdsJson = """{"0": ${Json.encodeToString(stopIds)}}"""
-
-                    val modifierUrl = request.url.newBuilder()
-                        .removeAllQueryParameters("json_stopId")
-                        .addQueryParameter("stopIds", stopIdsJson)
-                        .build()
-                    val modifiedRequest = request.newBuilder()
-                        .url(modifierUrl)
-                        .build()
-                    chain.proceed(modifiedRequest)
-                } else {
-                    chain.proceed(request)
-                }
             }
             .build()
     }

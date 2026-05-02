@@ -63,23 +63,20 @@ class DashboardViewModel @Inject constructor(
             val now = Clock.System.now()
             val timeZone = TimeZone.currentSystemDefault()
 
+            val allDepartures = departuresRepository.get(profiles)
+
             val dashboardProfiles = profiles.map { profile ->
-                val departures = try {
-                    departuresRepository.get(profile)
-                        .map { departure ->
-                            DashboardDeparture(
-                                line = departure.line.value,
-                                leavesAt = departure.predicted.toLocalDateTime(timeZone).time,
-                                untilShouldHaveLeft = departure.scheduled - now,
-                                untilLeaves = departure.predicted - now,
-                                delay = departure.delay,
-                                headsign = departure.headsign,
-                            )
-                        }
-                } catch(e: Exception) {
-                    Log.e("DashboardVM", "Failed to fetch departures for ${profile.name}", e)
-                    emptyList()
-                }
+                val departures = allDepartures[profile].orEmpty()
+                    .map { departure ->
+                        DashboardDeparture(
+                            line = departure.line.value,
+                            leavesAt = departure.predicted.toLocalDateTime(timeZone).time,
+                            untilShouldHaveLeft = departure.scheduled - now,
+                            untilLeaves = departure.predicted - now,
+                            delay = departure.delay,
+                            headsign = departure.headsign,
+                        )
+                    }
 
                 DashboardProfile(
                     id = profile.id,
