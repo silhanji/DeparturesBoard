@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Maximum number of stations Golemio API allows querying in single request.
  */
-private const val GOLEMIO_API_STATION_LIMIT = 50;
+private const val GOLEMIO_API_STATION_LIMIT = 50
 
 class GolemioDeparturesRepository @Inject constructor(
     private val golemioApi: GolemioApiService
