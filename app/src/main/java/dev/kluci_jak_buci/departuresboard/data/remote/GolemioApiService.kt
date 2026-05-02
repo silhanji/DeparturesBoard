@@ -8,7 +8,7 @@ import kotlin.time.Instant
 interface GolemioApiService {
     @GET("v2/public/departureboards")
     suspend fun getDepartures(
-        @Query("json_stopId") stationIds: List<String>,
+        @Query("stopIds[]") stationIds: List<String>,
         @Query("limit") limit: Number = 5,
         @Query("routeShortNames") routeShortNames: List<String>? = null,
         @Query("minutesAfter") minutesAfter: Number = 60,

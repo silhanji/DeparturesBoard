@@ -8,10 +8,12 @@ import kotlin.time.Instant
  * @param scheduled Time at which the vehicle is scheduled to depart the station
  * @param predicted Time at which it is predicted the vehicle will depart, including delay
  * @param delay Delay of the vehicle against it's scheduled departure time
+ * @param headsign Terminal station of the line
  */
 data class Departure(
     val line: LineName,
     val scheduled: Instant,
     val predicted: Instant,
     val delay: Duration,
+    val headsign: String,
 )
