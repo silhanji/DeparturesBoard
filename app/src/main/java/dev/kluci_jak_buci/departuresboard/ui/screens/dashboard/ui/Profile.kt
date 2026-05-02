@@ -31,6 +31,7 @@ fun Profile(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     showNextDepartures: Boolean = true,
+    nextDeparturesCount: Int = 3,
 ) {
     val departure = profile.departures.firstOrNull()
 
@@ -49,7 +50,7 @@ fun Profile(
             )
 
             if(showNextDepartures) {
-                for(i in 1 until 3.coerceAtMost(profile.departures.size)) {
+                for(i in 1 until nextDeparturesCount.coerceAtMost(profile.departures.size)) {
                     val spacerSize = if(i == 1) 24.dp else 16.dp
 
                     val nextDeparture = profile.departures[i]
