@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">Departures Board</string>
+    <string name="choose_station">Choose station</string>
+    <string name="back">Back</string>
+    <string name="station_name">Station name</string>
+    <string name="search_icon">Search Icon</string>
+    <string name="available_stations">Available stations</string>
+    <string name="select_line">Select Line</string>
+    <string name="selected">Selected</string>
+    <string name="tap_to_select">Tap to select</string>
+    <string name="confirm">Confirm</string>
+    <string name="name">Name</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="profile_details">Profile Details</string>
+    <string name="time_filter">Time Filter</string>
+    <string name="all_day">All day</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="station">Station</string>
+    <string name="lines">Lines</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="select_time">Select time</string>
+    <string name="departures">Departures</string>
+    <string name="select_station">Select Station</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="no_lines_selected_hint">All lines from this station will be shown. Tap \'Add\' to filter specific lines.</string>
+    <string name="clear_icon">clear</string>
 </resources>

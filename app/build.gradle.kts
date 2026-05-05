@@ -5,15 +5,12 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.gradle.secrets)
     kotlin("plugin.serialization")
+    kotlin("plugin.parcelize")
 }
 
 android {
     namespace = "dev.kluci_jak_buci.departuresboard"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.kluci_jak_buci.departuresboard"
@@ -62,6 +59,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

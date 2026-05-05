@@ -5,9 +5,11 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.kluci_jak_buci.departuresboard.data.local.LocalProfilesRepository
+import dev.kluci_jak_buci.departuresboard.data.local.LocalStationsRepository
 import dev.kluci_jak_buci.departuresboard.data.remote.GolemioDeparturesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.DeparturesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
+import dev.kluci_jak_buci.departuresboard.domain.repository.StationsRepository
 import javax.inject.Singleton
 
 @Module
@@ -19,6 +21,12 @@ abstract class RepositoryModule {
     abstract fun bindProfilesRepository(
         localProfilesRepository: LocalProfilesRepository
     ): ProfilesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStationsRepository(
+        localStationsRepository: LocalStationsRepository
+    ): StationsRepository
 
     @Binds
     @Singleton
