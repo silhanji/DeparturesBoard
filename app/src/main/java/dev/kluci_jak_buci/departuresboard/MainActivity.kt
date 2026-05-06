@@ -13,13 +13,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import dev.kluci_jak_buci.departuresboard.ui.screens.chooseplatform.choosePlatform
 import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.Dashboard
 import dev.kluci_jak_buci.departuresboard.ui.theme.DeparturesBoardTheme
 import dev.kluci_jak_buci.departuresboard.ui.screens.dashboard.dashboard
-import dev.kluci_jak_buci.departuresboard.ui.screens.savestation.saveStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.SearchStation
-import dev.kluci_jak_buci.departuresboard.ui.screens.searchstation.searchStation
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.ProfileEditor
+import dev.kluci_jak_buci.departuresboard.ui.screens.profileeditor.profileEditor
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -52,12 +50,9 @@ fun App(modifier: Modifier = Modifier) {
         popEnterTransition = ScreenTransitions.popEnter,
         popExitTransition = ScreenTransitions.popExit,
     ) {
-        choosePlatform(
-            onBackArrowClick = { navController.popBackStack() }
-        )
         dashboard(
             onAddDepartureClick = {
-                navController.navigate(SearchStation)
+                navController.navigate(ProfileEditor)
             },
             onSettingsClick = {
                 // Go to settings screens when implemented
@@ -66,10 +61,8 @@ fun App(modifier: Modifier = Modifier) {
                 // Go to profile screens when implemented
             }
         )
-        saveStation(
-            onBackArrowClick = { navController.popBackStack() }
-        )
-        searchStation(
+        profileEditor(
+            navController = navController,
             onBackArrowClick = { navController.popBackStack() }
         )
     }

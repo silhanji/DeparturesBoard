@@ -49,13 +49,6 @@ data class Profile(
         require(selectedLines.isNotEmpty()) {
             "Profile must have at least one defined line"
         }
-
-        val distinctLineNames = selectedLines
-            .map { l -> l.line }
-            .distinct()
-        require(distinctLineNames.size == selectedLines.size) {
-            "Profile can not contain departures of one line from multiple platforms"
-        }
     }
 }
 
