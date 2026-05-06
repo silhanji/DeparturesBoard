@@ -1,9 +1,9 @@
 package dev.kluci_jak_buci.departuresboard.ui.screens.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.kluci_jak_buci.departuresboard.domain.model.ProfileId
 import dev.kluci_jak_buci.departuresboard.domain.repository.ProfilesRepository
 import dev.kluci_jak_buci.departuresboard.domain.repository.DeparturesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,21 +15,36 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.time.Clock
+import kotlin.time.Duration
+
+/**
+ * Number of milliseconds between periodic refresh of departures
+ */
+private const val DEPARTURES_REFRESH_INTERVAL = 15_000L
 
 data class DashboardProfile(
+    val id: ProfileId,
     val name: String,
     val departures: List<DashboardDeparture>,
 )
 
 data class DashboardDeparture(
     val line: String,
-    val minutesUntil: Int,
+    val leavesAt: LocalTime,
+    val untilLeaves: Duration,
+    val untilShouldHaveLeft: Duration,
+    val delay: Duration,
+    val headsign: String,
 )
 
 data class DashboardUiState(
-    val profiles: List<DashboardProfile> = emptyList(),
+    val currentProfiles: List<DashboardProfile> = emptyList(),
+    val savedProfiles: List<DashboardProfile> = emptyList(),
     val isLoading: Boolean = false,
 )
 
@@ -39,45 +54,61 @@ class DashboardViewModel @Inject constructor(
     departuresRepository: DeparturesRepository,
 ) : ViewModel() {
 
+    // Flow which does not produce any data, but serves as a trigger
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply {
         tryEmit(Unit)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<DashboardUiState> = profilesRepository.getAll()
+        // Combining the two flows into one ensures that ui state is recomputed
+        // either when profiles change in repository or when refresh trigger produces new data
+        // (it gets triggered).
+        //
+        // This is achieved by using map function twice, on both flows.
         .flatMapLatest { profiles ->
             _refreshTrigger.map { profiles }
         }
         .map { profiles ->
-            val now = Clock.System.now();
+            val now = Clock.System.now()
+            val timeZone = TimeZone.currentSystemDefault()
 
+
+            val allDepartures = departuresRepository.get(profiles)
+
+            // Convert profiles and departures into models consumed by UI
             val dashboardProfiles = profiles.map { profile ->
-                val departures = try {
-                    departuresRepository.get(profile)
-                        .map { departure ->
-                            DashboardDeparture(
-                                line = departure.line.value,
-                                minutesUntil = (departure.predicted - now).inWholeMinutes.toInt()
-                            )
-                        }
-                } catch(e: Exception) {
-                    Log.e("DashboardVM", "Failed to fetch departures for ${profile.name}", e)
-                    emptyList()
-                }
+                val departures = allDepartures[profile].orEmpty()
+                    .map { departure ->
+                        DashboardDeparture(
+                            line = departure.line.value,
+                            leavesAt = departure.predicted.toLocalDateTime(timeZone).time,
+                            untilShouldHaveLeft = departure.scheduled - now,
+                            untilLeaves = departure.predicted - now,
+                            delay = departure.delay,
+                            headsign = departure.headsign,
+                        )
+                    }
 
                 DashboardProfile(
+                    id = profile.id,
                     name = profile.name,
-                    departures = departures
+                    departures = departures,
                 )
             }
 
+            // For debug only, current profiles should be determined by current time and location
+            val currentConst = 2
             DashboardUiState(
-                profiles = dashboardProfiles,
+                currentProfiles = dashboardProfiles.take(currentConst),
+                savedProfiles = dashboardProfiles.drop(currentConst),
             )
         }
+        // Do not wait until someone subscribes to the flow, instead
+        // compute it always on background
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(),
             initialValue = DashboardUiState(isLoading = true)
         )
 
@@ -85,11 +116,14 @@ class DashboardViewModel @Inject constructor(
         periodicallyRefreshDepartures()
     }
 
+    /**
+     * Launches a coroutine that periodically triggers _refreshTrigger and thus refreshes
+     * the UI State
+     */
     private fun periodicallyRefreshDepartures() {
         viewModelScope.launch {
             while(true) {
-                // Refresh every 15s
-                delay(15_000L)
+                delay(DEPARTURES_REFRESH_INTERVAL)
                 _refreshTrigger.emit(Unit)
             }
         }

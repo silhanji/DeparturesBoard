@@ -53,13 +53,18 @@ fun App(modifier: Modifier = Modifier) {
         dashboard(
             onAddDepartureClick = {
                 navController.navigate(ProfileEditor)
+            },
+            onSettingsClick = {
+                // Go to settings screens when implemented
+            },
+            onProfileClick = {
+                // Go to profile screens when implemented
             }
         )
         profileEditor(
             navController = navController,
             onBackArrowClick = { navController.popBackStack() }
         )
-
     }
 }
 
