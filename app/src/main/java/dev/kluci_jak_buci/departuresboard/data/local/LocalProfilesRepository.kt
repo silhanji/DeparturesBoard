@@ -1,9 +1,9 @@
 package dev.kluci_jak_buci.departuresboard.data.local
 
-import dev.kluci_jak_buci.departuresboard.data.local.db.DbProfile
-import dev.kluci_jak_buci.departuresboard.data.local.db.DbProfileWithLines
-import dev.kluci_jak_buci.departuresboard.data.local.db.DbSelectedLine
-import dev.kluci_jak_buci.departuresboard.data.local.db.ProfileDao
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.DbProfile
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.DbProfileWithLines
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.DbSelectedLine
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.ProfileDao
 import dev.kluci_jak_buci.departuresboard.domain.model.LineName
 import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
 import dev.kluci_jak_buci.departuresboard.domain.model.Profile

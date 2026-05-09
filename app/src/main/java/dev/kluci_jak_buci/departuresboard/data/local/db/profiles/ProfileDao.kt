@@ -1,4 +1,4 @@
-package dev.kluci_jak_buci.departuresboard.data.local.db
+package dev.kluci_jak_buci.departuresboard.data.local.db.profiles
 
 import androidx.room.Dao
 import androidx.room.Insert

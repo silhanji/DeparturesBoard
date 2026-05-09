@@ -7,8 +7,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.kluci_jak_buci.departuresboard.data.local.db.DeparturesBoardDatabase
-import dev.kluci_jak_buci.departuresboard.data.local.db.ProfileDao
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.DeparturesBoardDatabase
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.ProfileDao
 import javax.inject.Singleton
 
 @Module
