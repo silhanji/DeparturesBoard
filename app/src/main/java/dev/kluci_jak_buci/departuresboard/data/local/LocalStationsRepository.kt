@@ -10,6 +10,7 @@ import dev.kluci_jak_buci.departuresboard.domain.model.PlatformId
 import dev.kluci_jak_buci.departuresboard.domain.model.Station
 import dev.kluci_jak_buci.departuresboard.domain.model.StationName
 import dev.kluci_jak_buci.departuresboard.domain.repository.StationsRepository
+import java.text.Normalizer
 import javax.inject.Inject
 
 class LocalStationsRepository @Inject constructor(
@@ -17,7 +18,10 @@ class LocalStationsRepository @Inject constructor(
 ) : StationsRepository {
 
     override suspend fun search(needle: String): List<StationName> {
-        val query = needle.trim()
+        val query = needle
+            .trim()
+            .lowercase()
+            .removeAccents()
         if (query.isEmpty())
             return emptyList()
 
@@ -68,4 +72,10 @@ class LocalStationsRepository @Inject constructor(
             else -> throw IllegalArgumentException("Unknown line type: $dbType")
         }
     }
+}
+
+private fun String.removeAccents(): String {
+    val nfdNormalizedString = Normalizer.normalize(this, Normalizer.Form.NFD)
+    val regex = Regex("\\p{InCombiningDiacriticalMarks}+")
+    return regex.replace(nfdNormalizedString, "")
 }

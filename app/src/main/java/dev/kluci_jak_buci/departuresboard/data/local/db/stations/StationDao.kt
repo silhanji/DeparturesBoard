@@ -2,15 +2,18 @@ package dev.kluci_jak_buci.departuresboard.data.local.db.stations
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.SkipQueryVerification
 import androidx.room.Transaction
 
 @Dao
 interface StationDao {
 
+    // We have to skip query validation as Room does not know about our custom levenshtein function
+    @SkipQueryVerification
     @Query(
         """
-            SELECT name FROM stations
-            WHERE name LIKE '%' || :needle || '%'
+            SELECT name, levenshtein(haystack, :needle) AS distance FROM stations
+            ORDER BY distance ASC
             LIMIT :limit
         """
     )

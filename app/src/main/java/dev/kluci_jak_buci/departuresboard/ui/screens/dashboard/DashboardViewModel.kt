@@ -21,6 +21,7 @@ import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * Number of milliseconds between periodic refresh of departures
@@ -48,6 +49,7 @@ data class DashboardUiState(
     val isLoading: Boolean = false,
 )
 
+@OptIn(ExperimentalTime::class)
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     profilesRepository: ProfilesRepository,
@@ -74,7 +76,11 @@ class DashboardViewModel @Inject constructor(
             val timeZone = TimeZone.currentSystemDefault()
 
 
-            val allDepartures = departuresRepository.get(profiles)
+            val allDepartures = try {
+                departuresRepository.get(profiles)
+            } catch(e: Exception) {
+                emptyMap()
+            }
 
             // Convert profiles and departures into models consumed by UI
             val dashboardProfiles = profiles.map { profile ->

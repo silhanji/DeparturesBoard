@@ -13,6 +13,8 @@ data class DbStation(
     val id: String,
     @ColumnInfo(name = "name")
     val name: String,
+    @ColumnInfo(name = "haystack")
+    val haystack: String, // Name which does not contain diacritics for better search
 )
 
 data class DbStationWithPlatforms(
@@ -29,4 +31,6 @@ data class DbStationWithPlatforms(
 data class DbStationName(
     @ColumnInfo(name = "name")
     val name: String,
+    @ColumnInfo(name = "distance")
+    val distance: Int,
 )
