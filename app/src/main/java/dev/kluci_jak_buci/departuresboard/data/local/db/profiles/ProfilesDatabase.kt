@@ -11,6 +11,6 @@ import dev.kluci_jak_buci.departuresboard.data.local.db.TimeConverter
     exportSchema = false
 )
 @TypeConverters(TimeConverter::class)
-abstract class DeparturesBoardDatabase : RoomDatabase() {
+abstract class ProfilesDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
 }

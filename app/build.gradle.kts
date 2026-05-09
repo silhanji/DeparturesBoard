@@ -73,6 +73,10 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 secrets {
     propertiesFileName = "secrets.properties"
 }

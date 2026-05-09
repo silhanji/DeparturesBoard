@@ -28,4 +28,6 @@ enum class LineType {
     TRAM,
     BUS,
     METRO,
+    FERRY,
+    TROLLEYBUS,
 }

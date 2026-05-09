@@ -3,6 +3,7 @@ package dev.kluci_jak_buci.departuresboard.data.local.db.profiles
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -14,6 +15,9 @@ import androidx.room.PrimaryKey
             childColumns = [ "profile_id" ],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index("profile_id", unique = true)
     ]
 )
 data class DbSelectedLine(

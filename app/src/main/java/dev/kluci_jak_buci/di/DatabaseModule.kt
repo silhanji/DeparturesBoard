@@ -7,8 +7,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.DeparturesBoardDatabase
+import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.ProfilesDatabase
 import dev.kluci_jak_buci.departuresboard.data.local.db.profiles.ProfileDao
+import dev.kluci_jak_buci.departuresboard.data.local.db.stations.StationDao
+import dev.kluci_jak_buci.departuresboard.data.local.db.stations.StationsDatabase
 import javax.inject.Singleton
 
 @Module
@@ -17,13 +19,13 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDeparturesBoardDatabase(
+    fun provideProfilesDatabase(
         @ApplicationContext context: Context
-    ): DeparturesBoardDatabase {
+    ): ProfilesDatabase {
         return Room.databaseBuilder(
             context,
-            DeparturesBoardDatabase::class.java,
-            "departures_board_database"
+            ProfilesDatabase::class.java,
+            "profiles_database"
         )
             .fallbackToDestructiveMigration(dropAllTables = true) // TODO: Remove
             .build()
@@ -31,7 +33,28 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideProfileDao(database: DeparturesBoardDatabase): ProfileDao {
+    fun provideProfileDao(database: ProfilesDatabase): ProfileDao {
         return database.profileDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideStationsDatabase(
+        @ApplicationContext context: Context
+    ): StationsDatabase {
+        return Room.databaseBuilder(
+            context,
+            StationsDatabase::class.java,
+            "stations_database"
+        )
+            .createFromAsset("stations.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideStationDao(database: StationsDatabase): StationDao {
+        return database.stationDao()
     }
 }
