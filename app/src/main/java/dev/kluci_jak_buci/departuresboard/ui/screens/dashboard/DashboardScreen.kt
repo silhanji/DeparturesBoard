@@ -59,7 +59,7 @@ private fun Screen(
     Scaffold(
         topBar = { TopBar(onSettingsClick) },
         floatingActionButton = {
-            if(uiState.savedProfiles.isNotEmpty()) {
+            if(uiState.currentProfiles.isNotEmpty() || uiState.savedProfiles.isNotEmpty()) {
                 Fab(
                     onclick = { onAddDepartureClick() }
                 )

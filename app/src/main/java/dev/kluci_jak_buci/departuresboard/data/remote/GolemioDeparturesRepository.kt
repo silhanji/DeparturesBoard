@@ -9,12 +9,14 @@ import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 
 /**
  * Maximum number of stations Golemio API allows querying in single request.
  */
 private const val GOLEMIO_API_STATION_LIMIT = 50
 
+@OptIn(ExperimentalTime::class)
 class GolemioDeparturesRepository @Inject constructor(
     private val golemioApi: GolemioApiService
 ) : DeparturesRepository {

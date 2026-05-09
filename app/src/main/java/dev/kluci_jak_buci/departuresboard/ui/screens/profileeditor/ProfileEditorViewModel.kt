@@ -91,7 +91,7 @@ class ProfileEditorViewModel @Inject constructor(
                 .collectLatest { searchText ->
                     val foundStations = stationsRepository.search(searchText)
                     updateSearchStationState {
-                        it.copy(foundStations = foundStations, searchText =  searchText)
+                        it.copy(foundStations = foundStations, searchText = searchText)
                     }
                 }
         }
