@@ -62,6 +62,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
